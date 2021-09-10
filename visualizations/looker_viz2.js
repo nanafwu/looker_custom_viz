@@ -12,16 +12,16 @@ const visObject = {
   * The create function gets called when the visualization is mounted but before any
   * data is passed to it.
   **/
-	create: function(element, config){
+  create: function(element, config){
     console.log('doing something')
-		element.innerHTML = "<h1>Ready to render!</h1>";
-	},
+    element.innerHTML = "";
+  },
 
  /**
   * UpdateAsync is the function that gets called (potentially) multiple times. It receives
   * the data and should update the visualization with the new data.
   **/
-	updateAsync: function(data, element, config, queryResponse, details, doneRendering){
+  updateAsync: function(data, element, config, queryResponse, details, doneRendering){
     
     // set the dimensions and margins of the graph
     var margin = {top: 30, right: 30, bottom: 30, left: 50},
@@ -29,7 +29,7 @@ const visObject = {
         height = 400 - margin.top - margin.bottom;
 
     // append the svg object to the body of the page
-    var svg = d3.select("#my_dataviz")
+    var svg = d3.select("#vis")
       .append("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
@@ -116,8 +116,8 @@ const visObject = {
       };
     }
 
-		doneRendering()
-	}
+    doneRendering()
+  }
 };
 
 looker.plugins.visualizations.add(visObject);
