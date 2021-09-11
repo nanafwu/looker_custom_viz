@@ -26,7 +26,8 @@ looker.plugins.visualizations.add({
   **/
   create: function(element, config){
     console.log('-- Creating something --')
-    element.innerHTML = "";
+    element.style.fontFamily = `"Open Sans", "Helvetica", sans-serif`
+    //element.innerHTML = "";
   },
 
  /**
@@ -35,10 +36,10 @@ looker.plugins.visualizations.add({
   **/
   updateAsync: function(data, element, config, queryResponse, details, doneRendering){
     console.log('-- Update Async --')
-    //console.log('data: ', data),
-    //console.log('config: ', config)
-    //console.log('details', details),
-    //console.log('queryResponse', queryResponse)
+    console.log('data: ', data),
+    console.log('config: ', config)
+    console.log('details', details),
+    console.log('queryResponse', queryResponse)
 
     alpha_prior = 1;
     beta_prior = 1;
@@ -59,12 +60,12 @@ looker.plugins.visualizations.add({
     // set the dimensions and margins of the graph
     var margin = {top: 30, right: 30, bottom: 30, left: 50},
         width = 460 - margin.left - margin.right,
-        height = 400 - margin.top - margin.bottom;
+        height = 300 - margin.top - margin.bottom;
 
     // Clear any existing SVGs
-    d3.select("#vis").selectAll("*").remove();
+    d3.select(element).selectAll("*").remove();
     // append the svg object to the body of the page
-    var svg = d3.select("#vis")
+    var svg = d3.select(element)
       .append("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
