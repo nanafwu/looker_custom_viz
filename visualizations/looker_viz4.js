@@ -7,18 +7,18 @@
 
 looker.plugins.visualizations.add({
 
- // options: {
- //    first_option: {
- //      type: "string",
- //      label: "My First Option",
- //      default: "Default Value"
- //    },
- //    second_option: {
- //      type: "number",
- //      label: "My Second Option",
- //      default: 42
- //    }
- //  },
+ options: {
+    first_option: {
+      type: "string",
+      label: "My First Option",
+      default: "Default Value"
+    },
+    second_option: {
+      type: "number",
+      label: "My Second Option",
+      default: 42
+    }
+  },
  /**
  /**
   * The create function gets called when the visualization is mounted but before any
@@ -61,6 +61,8 @@ looker.plugins.visualizations.add({
         width = 460 - margin.left - margin.right,
         height = 400 - margin.top - margin.bottom;
 
+    // Clear any existing SVGs
+    d3.select("#vis").selectAll("*").remove();
     // append the svg object to the body of the page
     var svg = d3.select("#vis")
       .append("svg")
