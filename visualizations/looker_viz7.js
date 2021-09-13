@@ -5,7 +5,8 @@
  *  - Example Visualizations - https://github.com/looker/custom_visualizations_v2/tree/master/src/examples
  **/
 
-function compare_conversion_probability(
+function compare_conversion_probability (
+  variant_A_label, variant_B_label,
   alpha_posterior_A, beta_posterior_A, alpha_posterior_B, beta_posterior_B) {
   var samples = 3000;
   var A_greater_than_B = 0;
@@ -21,11 +22,14 @@ function compare_conversion_probability(
     }  
   }); 
   
-  var prob_A_greater_than_B = A_greater_than_B / samples;
-  var prob_B_greater_than_A = B_greater_than_A / samples;
-    
-  console.log('A_greater_than_B', prob_A_greater_than_B,
-             'B_greater_than_A', prob_B_greater_than_A)  
+  var prob_A_greater_than_B = (A_greater_than_B / samples) * 100;
+  var prob_B_greater_than_A = (B_greater_than_A / samples) * 100;
+  
+  if (prob_A_greater_than_B > B_greater_than_A) {
+    return 'There is a ' + prob_A_greater_than_B + '% chance that ' + variant_A_label + ' converts better than ' + variant_B_label;
+  } else {
+    return 'There is a ' + prob_B_greater_than_A + '% chance that ' + variant_B_label + ' converts better than ' + variant_A_label;
+  }
 }
 
 /*
@@ -85,13 +89,7 @@ function get_ab_test_data(data, label_variant, label_visitors, label_conversions
   
     var variant_A_label = data[0][label_variant].value; 
     var variant_B_label = data[1][label_variant].value;
-  
-    var conversion_rate_A = conversions_from_A / visitors_to_A;
-    variant_A_label = variant_A_label.concat(' - ', conversion_rate_A.toFixed(3), ' conversion rate');
-  
-    var conversion_rate_B = conversions_from_B / visitors_to_B;
-    variant_B_label = variant_B_label.concat(' - ', conversion_rate_B.toFixed(3), ' conversion rate');
-    
+      
     return {
       variant_A_label: variant_A_label,
       variant_B_label: variant_B_label,
@@ -151,17 +149,13 @@ looker.plugins.visualizations.add({
     var alpha_posterior_B = alpha_prior + ab_test_data.conversions_from_B;
     var beta_posterior_B = beta_prior + ab_test_data.visitors_to_B - ab_test_data.conversions_from_B;
     
-    // Calculate which variant has a higher conversion rate
-    compare_conversion_probability(alpha_posterior_A, beta_posterior_A, alpha_posterior_B, beta_posterior_B);
-    
     // set the dimensions and margins of the graph
-    var margin = {top: 0, right: 10, bottom: 30, left: 30},
-        width = 900 - margin.left - margin.right,
-        height = 250 - margin.top - margin.bottom;
-
     var graph_width = 400;
     var graph_height = 200;
-    
+    var margin = {top: 0, right: 0, bottom: 30, left: 30},
+        width = graph_width + margin.left + margin.right,
+        height = 250 + margin.top + margin.bottom;
+
     // Clear any existing SVGs
     d3.select(element).selectAll("*").remove();
     // append the svg object to the body of the page
@@ -198,13 +192,25 @@ looker.plugins.visualizations.add({
     }
     
     // add the x Axis
-    var x = d3.scaleLinear()
+    var xScale = d3.scaleLinear()
         .domain([0, max_X + 0.05])
         .range([0, graph_width]);
     
+     var xAxis = d3.axisBottom().scale(xScale)
+      .tickFormat(function (tickValue) {
+       return tickValue;
+     });
+    
+     // Add the text label for X Axis
+    svg.append("text")
+      .attr("x", graph_width / 2)
+      .attr("y", graph_height + 40)
+      .style("text-anchor", "middle")
+      .text("Conversion Rate")
+    
     svg.append("g")
         .attr("transform", "translate(0," + graph_height + ")")
-        .call(d3.axisBottom(x));
+        .call(xAxis);
 
     // add the y Axis
     var y = d3.scaleLinear()
@@ -225,7 +231,7 @@ looker.plugins.visualizations.add({
         .attr("stroke-linejoin", "round")
         .attr("d",  d3.line()
           .curve(d3.curveBasis)
-            .x(function(d) { return x(d[0]); })
+            .x(function(d) { return xScale(d[0]); })
             .y(function(d) { return y(d[1]); })
         );
 
@@ -240,7 +246,7 @@ looker.plugins.visualizations.add({
         .attr("stroke-linejoin", "round")
         .attr("d",  d3.line()
           .curve(d3.curveBasis)
-            .x(function(d) { return x(d[0]); })
+            .x(function(d) { return xScale(d[0]); })
             .y(function(d) { return y(d[1]); })
         );
 
@@ -250,6 +256,15 @@ looker.plugins.visualizations.add({
     svg.append("text").attr("x", 320).attr("y", 30).text(ab_test_data.variant_A_label).style("font-size", "15px").attr("alignment-baseline","middle")
     svg.append("text").attr("x", 320).attr("y", 60).text(ab_test_data.variant_B_label).style("font-size", "15px").attr("alignment-baseline","middle")
 
+     // Calculate which variant has a higher conversion rate
+    var variant_win_str = compare_conversion_probability(
+      ab_test_data.variant_A_label,
+      ab_test_data.variant_B_label,
+      alpha_posterior_A, beta_posterior_A, alpha_posterior_B, beta_posterior_B);
+    
+    svg.append("text").attr("x", 0).attr("y", 270).text(variant_win_str).style("font-size", "15px").attr("alignment-baseline","middle")
+
+    // Render probability of variant A beating Variant B.
     doneRendering()
   }
 });
