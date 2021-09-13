@@ -76,14 +76,21 @@ Get the data to use for AB test calculations.
 Only check first two rows of data
 */
 function get_ab_test_data(data, label_variant, label_visitors, label_conversions) {
-    var variant_A_label = data[0][label_variant].value; 
-    var variant_B_label = data[1][label_variant].value; 
 
     var visitors_to_A = data[0][label_visitors].value; 
     var visitors_to_B = data[1][label_visitors].value; 
     
     var conversions_from_A = data[0][label_conversions].value; 
     var conversions_from_B = data[1][label_conversions].value; 
+  
+    var variant_A_label = data[0][label_variant].value; 
+    var variant_B_label = data[1][label_variant].value;
+  
+    var conversion_rate_A = conversions_from_A / visitors_to_A;
+    variant_A_label = variant_A_label.concat(' - ', conversion_rate_A.toFixed(3), ' conversion rate');
+  
+    var conversion_rate_B = conversions_from_B / visitors_to_B;
+    variant_B_label = variant_B_label.concat(' - ', conversion_rate_B.toFixed(3), ' conversion rate');
     
     return {
       variant_A_label: variant_A_label,
@@ -148,10 +155,13 @@ looker.plugins.visualizations.add({
     compare_conversion_probability(alpha_posterior_A, beta_posterior_A, alpha_posterior_B, beta_posterior_B);
     
     // set the dimensions and margins of the graph
-    var margin = {top: 10, right: 10, bottom: 30, left: 30},
-        width = 460 - margin.left - margin.right,
-        height = 300 - margin.top - margin.bottom;
+    var margin = {top: 0, right: 10, bottom: 30, left: 30},
+        width = 900 - margin.left - margin.right,
+        height = 250 - margin.top - margin.bottom;
 
+    var graph_width = 400;
+    var graph_height = 200;
+    
     // Clear any existing SVGs
     d3.select(element).selectAll("*").remove();
     // append the svg object to the body of the page
@@ -190,15 +200,15 @@ looker.plugins.visualizations.add({
     // add the x Axis
     var x = d3.scaleLinear()
         .domain([0, max_X + 0.05])
-        .range([0, width]);
+        .range([0, graph_width]);
     
     svg.append("g")
-        .attr("transform", "translate(0," + height + ")")
+        .attr("transform", "translate(0," + graph_height + ")")
         .call(d3.axisBottom(x));
 
     // add the y Axis
     var y = d3.scaleLinear()
-              .range([height, 0])
+              .range([graph_height, 0])
               .domain([0, max_Y]);
     
     svg.append("g")
