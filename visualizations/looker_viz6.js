@@ -5,9 +5,9 @@
  *  - Example Visualizations - https://github.com/looker/custom_visualizations_v2/tree/master/src/examples
  **/
 
-function compare_conversion_probability (
+function compare_conversion_probability(
   alpha_posterior_A, beta_posterior_A, alpha_posterior_B, beta_posterior_B) {
-  var samples = 5000;
+  var samples = 3000;
   var A_greater_than_B = 0;
   var B_greater_than_A = 0;
     
@@ -26,6 +26,73 @@ function compare_conversion_probability (
     
   console.log('A_greater_than_B', prob_A_greater_than_B,
              'B_greater_than_A', prob_B_greater_than_A)  
+}
+
+/*
+Get dimensions or measures to use for variant, 
+# visitors, and # conversions.
+Set the 1st string dimension as the "variant".
+Set the 2nd numeric dimension as the "# visitors".
+Set the 3rd numeric dimension as the "conversions".
+*/
+function get_labels(queryResponse) {
+  
+    var lbl_variant, lbl_visitors, lbl_conversions;
+    
+    // First check dimensions
+    for(var dim of queryResponse.fields.dimensions) {
+      if (!lbl_variant && dim.type === "string") {
+        lbl_variant = dim.name
+      } else if (!lbl_visitors && dim.type == "number") {
+        lbl_visitors = dim.name
+      } else if (!lbl_conversions && dim.type == "number") {
+        lbl_conversions = dim.name
+      }
+    }
+    // Next check measures
+    for(var msr of queryResponse.fields.measures) {
+      if (!lbl_variant && msr.type === "string") {
+        lbl_variant = msr.name
+      } else if (!lbl_visitors && msr.type == "number") {
+        lbl_visitors = msr.name
+      } else if (!dim_conversions && msr.type == "number") {
+        lbl_conversions = msr.name
+      }
+    }
+    
+    console.log('Variant:', lbl_variant,
+               '\nVisitors:', lbl_visitors,
+               '\nConversions', lbl_conversions)  
+    return {
+      variant: lbl_variant,
+      visitors: lbl_visitors,
+      conversions: lbl_conversions
+    }
+}
+
+
+/*
+Get the data to use for AB test calculations.
+Only check first two rows of data
+*/
+function get_ab_test_data(data, label_variant, label_visitors, label_conversions) {
+    var variant_A_label = data[0][label_variant].value; 
+    var variant_B_label = data[1][label_variant].value; 
+
+    var visitors_to_A = data[0][label_visitors].value; 
+    var visitors_to_B = data[1][label_visitors].value; 
+    
+    var conversions_from_A = data[0][label_conversions].value; 
+    var conversions_from_B = data[1][label_conversions].value; 
+    
+    return {
+      variant_A_label: variant_A_label,
+      variant_B_label: variant_B_label,
+      visitors_to_A: visitors_to_A,
+      visitors_to_B: visitors_to_B,
+      conversions_from_A: conversions_from_A,
+      conversions_from_B: conversions_from_B
+    }
 }
 
 looker.plugins.visualizations.add({
@@ -60,34 +127,22 @@ looker.plugins.visualizations.add({
   **/
   updateAsync: function(data, element, config, queryResponse, details, doneRendering){
     console.log('-- Update Async --')
-    //console.log('data: ', data),
+    console.log('data: ', data),
     console.log('config: ', config)
     //console.log('details', details),
     console.log('queryResponse', queryResponse)
 
     var alpha_prior = 1;
     var beta_prior = 1;
-    var variant_A_label = 'Variant A'; 
-    var variant_B_label = 'Variant B';
-
-    var visitors_to_A = 1300;
-    var visitors_to_B = 1275;
     
-    var conversions_from_A = 120;
-    var conversions_from_B = 125;
+    var labels = get_labels(queryResponse);
+    var ab_test_data = get_ab_test_data(data, labels.variant, labels.visitors, labels.conversions)
     
-    // for(var dim of queryResponse.fields.dimensions) {
-    //   if (!variant_A_label && dim.type === "string") {
-        
-    //   }  
-    // }
-   
+    var alpha_posterior_A = alpha_prior + ab_test_data.conversions_from_A;
+    var beta_posterior_A = beta_prior + ab_test_data.visitors_to_A - ab_test_data.conversions_from_A;
     
-    var alpha_posterior_A = alpha_prior + conversions_from_A;
-    var beta_posterior_A = beta_prior + visitors_to_A - conversions_from_A;
-    
-    var alpha_posterior_B = alpha_prior + conversions_from_B;
-    var beta_posterior_B = beta_prior + visitors_to_B - conversions_from_B;
+    var alpha_posterior_B = alpha_prior + ab_test_data.conversions_from_B;
+    var beta_posterior_B = beta_prior + ab_test_data.visitors_to_B - ab_test_data.conversions_from_B;
     
     // Calculate which variant has a higher conversion rate
     compare_conversion_probability(alpha_posterior_A, beta_posterior_A, alpha_posterior_B, beta_posterior_B);
@@ -182,8 +237,8 @@ looker.plugins.visualizations.add({
     // Handmade legend
     svg.append("circle").attr("cx",300).attr("cy",30).attr("r", 6).style("fill", "#69b3a2")
     svg.append("circle").attr("cx",300).attr("cy",60).attr("r", 6).style("fill", "#404080")
-    svg.append("text").attr("x", 320).attr("y", 30).text(variant_A_label).style("font-size", "15px").attr("alignment-baseline","middle")
-    svg.append("text").attr("x", 320).attr("y", 60).text(variant_B_label).style("font-size", "15px").attr("alignment-baseline","middle")
+    svg.append("text").attr("x", 320).attr("y", 30).text(ab_test_data.variant_A_label).style("font-size", "15px").attr("alignment-baseline","middle")
+    svg.append("text").attr("x", 320).attr("y", 60).text(ab_test_data.variant_B_label).style("font-size", "15px").attr("alignment-baseline","middle")
 
     doneRendering()
   }
