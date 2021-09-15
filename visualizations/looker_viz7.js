@@ -216,13 +216,13 @@ looker.plugins.visualizations.add({
       .call(xAxis);
 
     // add the y Axis
-    var y = d3.scaleLinear()
+    var yScale = d3.scaleLinear()
           .range([graphHeight, 0])
           .domain([0, maxY]);
     
     svg.append("g")
         .attr("transform", "translate(" + axisPadding + ", 0)")
-        .call(d3.axisLeft(y));
+        .call(d3.axisLeft(yScale));
 
     // Add the text label for Y axis
     svg.append("text")
@@ -247,7 +247,7 @@ looker.plugins.visualizations.add({
           .curve(d3.curveBasis)
             .x(function(d) { 
               return xScale(d[0]); })
-            .y(function(d) { return y(d[1]); })
+            .y(function(d) { return yScale(d[1]); })
         );
 
     // Plot the area of posterior B
@@ -263,7 +263,7 @@ looker.plugins.visualizations.add({
         .attr("d",  d3.line()
           .curve(d3.curveBasis)
             .x(function(d) { return xScale(d[0]); })
-            .y(function(d) { return y(d[1]); })
+            .y(function(d) { return yScale(d[1]); })
         );
 
     // Handmade legend
