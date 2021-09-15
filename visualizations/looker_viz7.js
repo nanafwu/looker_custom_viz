@@ -5,7 +5,7 @@
  *  - Example Visualizations - https://github.com/looker/custom_visualizations_v2/tree/master/src/examples
  **/
 
-function compare_conversion_probability (
+function compareConversionProbability (
   variantALabel, variantBLabel,
   alphaPosteriorA, betaPosteriorA, alphaPosteriorB, betaPosteriorB) {
   var samples = 10000;
@@ -39,7 +39,7 @@ Set the 1st string dimension as the "variant".
 Set the 2nd numeric dimension as the "# visitors".
 Set the 3rd numeric dimension as the "conversions".
 */
-function get_labels(queryResponse) {
+function getLabels(queryResponse) {
   
     var lblVariant, lblVisitors, lblCnversions;
     
@@ -76,7 +76,7 @@ function get_labels(queryResponse) {
 Get the data to use for AB test calculations.
 Only check first two rows of data
 */
-function get_ab_test_data(data, labelVariant, labelVisitors, labelConversions) {
+function getABTestData(data, labelVariant, labelVisitors, labelConversions) {
 
     var visitorsToA = data[0][labelVisitors].value; 
     var visitorsToB = data[1][labelVisitors].value; 
@@ -136,8 +136,8 @@ looker.plugins.visualizations.add({
     var alphaPrior = 1;
     var betaPrior = 1;
     
-    var labels = get_labels(queryResponse);
-    var abTestData = get_ab_test_data(data, labels.variant, labels.visitors, labels.conversions)
+    var labels = getLabels(queryResponse);
+    var abTestData = getABTestData(data, labels.variant, labels.visitors, labels.conversions)
     
     var alphaPosteriorA = alphaPrior + abTestData.conversionsFromA;
     var betaPosteriorA = betaPrior + abTestData.visitorsToA - abTestData.conversionsFromA;
@@ -228,7 +228,7 @@ looker.plugins.visualizations.add({
     svg.append("text")
       .attr("transform", "rotate(-90)")
       .attr("x", -(graphHeight / 2))
-      .attr("y", -20)
+      .attr("y", axisPadding / 4)
       .style("text-anchor", "middle")
       .style("font-size", "12px")
       .text("Probability Density")
@@ -273,7 +273,7 @@ looker.plugins.visualizations.add({
     svg.append("text").attr("x", legendX + 20).attr("y", 60).text(abTestData.variantBLabel).style("font-size", "15px").attr("alignment-baseline","middle")
 
      // Calculate which variant has a higher conversion rate
-    var variant_win_str = compare_conversion_probability(
+    var variant_win_str = compareConversionProbability(
       abTestData.variantALabel,
       abTestData.variantBLabel,
       alphaPosteriorA, betaPosteriorA, alphaPosteriorB, betaPosteriorB);
