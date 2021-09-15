@@ -8,7 +8,7 @@
 function compare_conversion_probability (
   variantALabel, variantBLabel,
   alphaPosteriorA, betaPosteriorA, alphaPosteriorB, betaPosteriorB) {
-  var samples = 3000;
+  var samples = 10000;
   var aGreaterThanB = 0;
   var bGreaterThanA = 0;
     
@@ -139,20 +139,20 @@ looker.plugins.visualizations.add({
     var labels = get_labels(queryResponse);
     var abTestData = get_ab_test_data(data, labels.variant, labels.visitors, labels.conversions)
     
-    var alpha_posterior_A = alphaPrior + abTestData.conversionsFromA;
-    var beta_posterior_A = betaPrior + abTestData.visitorsToA - abTestData.conversionsFromA;
+    var alphaPosteriorA = alphaPrior + abTestData.conversionsFromA;
+    var betaPosteriorA = betaPrior + abTestData.visitorsToA - abTestData.conversionsFromA;
     
-    var alpha_posterior_B = alphaPrior + abTestData.conversionsFromB;
-    var beta_posterior_B = betaPrior + abTestData.visitorsToB - abTestData.conversionsFromB;
+    var alphaPosteriorB = alphaPrior + abTestData.conversionsFromB;
+    var betaPosteriorB = betaPrior + abTestData.visitorsToB - abTestData.conversionsFromB;
     
     // set the dimensions and margins of the graph
-    var graph_width = 400;
-    var graph_height = 250;
-    var axis_padding = 40;
-    var probability_text_height = graph_height + 30 + axis_padding;
-    var legend_x = graph_width + axis_padding;
-    var width = graph_width + axis_padding + 200,
-        height = probability_text_height + 50;
+    var graphWidth = 400;
+    var graphHeight = 250;
+    var axisPadding = 40;
+    var probabilityTextHeight = graphHeight + 30 + axisPadding;
+    var legendX = graphWidth + axisPadding;
+    var width = graphWidth + axisPadding + 200,
+        height = probabilityTextHeight + 50;
         
     // Clear any existing SVGs
     d3.select(element).selectAll("*").remove();
@@ -172,31 +172,31 @@ looker.plugins.visualizations.add({
     // Draw beta distributions
     var minPDFValue = 0.001; // Don't bother plotting if PDF value falls below this
     for (i = 0; i <= 1; i += 0.01) {
-        var pdf_beta_A = jStat.beta.pdf(i, alpha_posterior_A, beta_posterior_A);
-        var pdf_beta_B = jStat.beta.pdf(i, alpha_posterior_B, beta_posterior_B);
+        var pdfBetaA = jStat.beta.pdf(i, alphaPosteriorA, betaPosteriorA);
+        var pdfBetaB = jStat.beta.pdf(i, alphaPosteriorB, betaPosteriorB);
         
-        if (pdf_beta_B > maxY || pdf_beta_A > maxY) {
-          maxY = pdf_beta_B;  
+        if (pdfBetaB > maxY || pdfBetaA > maxY) {
+          maxY = pdfBetaB;  
         }
         
-        if (pdf_beta_A > minPDFValue && i > maxX) {
+        if (pdfBetaA > minPDFValue && i > maxX) {
             maxX = i;
         }   
-        if (pdf_beta_B > minPDFValue && i > maxX) {
+        if (pdfBetaB > minPDFValue && i > maxX) {
             maxX = i;
         }    
-        if (pdf_beta_A > minPDFValue) {
-          betaA.push([i, pdf_beta_A])
+        if (pdfBetaA > minPDFValue) {
+          betaA.push([i, pdfBetaA])
         }
-        if (pdf_beta_B > minPDFValue) {
-          betaB.push([i, pdf_beta_B])
+        if (pdfBetaB > minPDFValue) {
+          betaB.push([i, pdfBetaB])
         }   
     }
     
     // add the x Axis
     var xScale = d3.scaleLinear()
         .domain([0, maxX ])
-        .range([0, graph_width]);
+        .range([0, graphWidth]);
     
      var xAxis = d3.axisBottom().scale(xScale)
       .tickFormat(function (tickValue) {
@@ -205,29 +205,29 @@ looker.plugins.visualizations.add({
     
      // Add the text label for X Axis
     svg.append("text")
-      .attr("x", (graph_width + axis_padding) / 2)
-      .attr("y", graph_height + axis_padding)
+      .attr("x", (graphWidth + axisPadding) / 2)
+      .attr("y", graphHeight + axisPadding)
       .style("text-anchor", "middle")
       .style("font-size", "12px")
       .text("Conversion Rate");
     
     svg.append("g")
-      .attr("transform", "translate(" + axis_padding + "," + graph_height + ")")
+      .attr("transform", "translate(" + axisPadding + "," + graphHeight + ")")
       .call(xAxis);
 
     // add the y Axis
     var y = d3.scaleLinear()
-          .range([graph_height, 0])
+          .range([graphHeight, 0])
           .domain([0, maxY]);
     
     svg.append("g")
-        .attr("transform", "translate(" + axis_padding + ", 0)")
+        .attr("transform", "translate(" + axisPadding + ", 0)")
         .call(d3.axisLeft(y));
 
     // Add the text label for Y axis
     svg.append("text")
       .attr("transform", "rotate(-90)")
-      .attr("x", -(graph_height / 2))
+      .attr("x", -(graphHeight / 2))
       .attr("y", -20)
       .style("text-anchor", "middle")
       .style("font-size", "12px")
@@ -242,7 +242,7 @@ looker.plugins.visualizations.add({
         .attr("stroke", "#000")
         .attr("stroke-width", 1)
         .attr("stroke-linejoin", "round")
-        .attr("transform", "translate(" + axis_padding + ", 0)")
+        .attr("transform", "translate(" + axisPadding + ", 0)")
         .attr("d",  d3.line()
           .curve(d3.curveBasis)
             .x(function(d) { 
@@ -259,7 +259,7 @@ looker.plugins.visualizations.add({
         .attr("stroke", "#000")
         .attr("stroke-width", 1)
         .attr("stroke-linejoin", "round")
-        .attr("transform", "translate(" + axis_padding + ", 0)")
+        .attr("transform", "translate(" + axisPadding + ", 0)")
         .attr("d",  d3.line()
           .curve(d3.curveBasis)
             .x(function(d) { return xScale(d[0]); })
@@ -267,21 +267,21 @@ looker.plugins.visualizations.add({
         );
 
     // Handmade legend
-    svg.append("circle").attr("cx", legend_x).attr("cy",30).attr("r", 6).style("fill", "#69b3a2")
-    svg.append("circle").attr("cx",legend_x).attr("cy",60).attr("r", 6).style("fill", "#404080")
-    svg.append("text").attr("x", legend_x + 20).attr("y", 30).text(abTestData.variantALabel).style("font-size", "15px").attr("alignment-baseline","middle")
-    svg.append("text").attr("x", legend_x + 20).attr("y", 60).text(abTestData.variantBLabel).style("font-size", "15px").attr("alignment-baseline","middle")
+    svg.append("circle").attr("cx", legendX).attr("cy",30).attr("r", 6).style("fill", "#69b3a2")
+    svg.append("circle").attr("cx",legendX).attr("cy",60).attr("r", 6).style("fill", "#404080")
+    svg.append("text").attr("x", legendX + 20).attr("y", 30).text(abTestData.variantALabel).style("font-size", "15px").attr("alignment-baseline","middle")
+    svg.append("text").attr("x", legendX + 20).attr("y", 60).text(abTestData.variantBLabel).style("font-size", "15px").attr("alignment-baseline","middle")
 
      // Calculate which variant has a higher conversion rate
     var variant_win_str = compare_conversion_probability(
       abTestData.variantALabel,
       abTestData.variantBLabel,
-      alpha_posterior_A, beta_posterior_A, alpha_posterior_B, beta_posterior_B);
+      alphaPosteriorA, betaPosteriorA, alphaPosteriorB, betaPosteriorB);
     
     
     svg.append("text")
-      .attr("x", axis_padding)
-      .attr("y", probability_text_height)
+      .attr("x", axisPadding)
+      .attr("y", probabilityTextHeight)
       .text(variant_win_str)
       .style("font-size", "15px")
       .attr("alignment-baseline","middle")
