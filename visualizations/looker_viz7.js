@@ -151,21 +151,20 @@ looker.plugins.visualizations.add({
     
     // set the dimensions and margins of the graph
     var graph_width = 400;
-    var graph_height = 200;
-    var margin = {top: 0, right: 0, bottom: 30, left: 30},
-        width = graph_width + margin.left + margin.right,
-        height = 250 + margin.top + margin.bottom;
-
+    var graph_height = 250;
+    var axis_padding = 40;
+    var probability_text_height = graph_height + 30 + axis_padding;
+    var width = graph_width + axis_padding,
+        height = probability_text_height + 50;
+        
     // Clear any existing SVGs
     d3.select(element).selectAll("*").remove();
+    
     // append the svg object to the body of the page
     var svg = d3.select(element)
       .append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-      .append("g")
-        .attr("transform",
-              "translate(" + margin.left + "," + margin.top + ")");
+        .attr("width", width)
+        .attr("height", height)
     
     var beta_A = []
     var beta_B = []
@@ -204,23 +203,34 @@ looker.plugins.visualizations.add({
      // Add the text label for X Axis
     svg.append("text")
       .attr("x", graph_width / 2)
-      .attr("y", graph_height + 40)
+      .attr("y", graph_height + axis_padding)
       .style("text-anchor", "middle")
-      .text("Conversion Rate")
+      .style("font-size", "12px")
+      .text("Conversion Rate");
     
     svg.append("g")
-        .attr("transform", "translate(0," + graph_height + ")")
-        .call(xAxis);
+      .attr("transform", "translate(" + axis_padding + "," + graph_height + ")")
+      .call(xAxis);
 
     // add the y Axis
     var y = d3.scaleLinear()
-              .range([graph_height, 0])
-              .domain([0, max_Y]);
+          .range([graph_height, 0])
+          .domain([0, max_Y]);
     
     svg.append("g")
+        .attr("transform", "translate(" + axis_padding + ", 0)")
         .call(d3.axisLeft(y));
+
+    // Add the text label for Y axis
+    svg.append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("x", -(graph_height / 2))
+      .attr("y", -20)
+      .style("text-anchor", "middle")
+      .style("font-size", "12px")
+      .text("Probability Density")
     
-    // Plot the area
+    // Plot the area of posterior A
     svg.append("path")
         .attr("class", "mypath")
         .datum(beta_A)
@@ -229,13 +239,14 @@ looker.plugins.visualizations.add({
         .attr("stroke", "#000")
         .attr("stroke-width", 1)
         .attr("stroke-linejoin", "round")
+        .attr("transform", "translate(" + axis_padding + ", 0)")
         .attr("d",  d3.line()
           .curve(d3.curveBasis)
             .x(function(d) { return xScale(d[0]); })
             .y(function(d) { return y(d[1]); })
         );
 
-    // Plot the area
+    // Plot the area of posterior B
     svg.append("path")
         .attr("class", "mypath")
         .datum(beta_B)
@@ -244,6 +255,7 @@ looker.plugins.visualizations.add({
         .attr("stroke", "#000")
         .attr("stroke-width", 1)
         .attr("stroke-linejoin", "round")
+        .attr("transform", "translate(" + axis_padding + ", 0)")
         .attr("d",  d3.line()
           .curve(d3.curveBasis)
             .x(function(d) { return xScale(d[0]); })
@@ -262,7 +274,14 @@ looker.plugins.visualizations.add({
       ab_test_data.variant_B_label,
       alpha_posterior_A, beta_posterior_A, alpha_posterior_B, beta_posterior_B);
     
-    svg.append("text").attr("x", 0).attr("y", 270).text(variant_win_str).style("font-size", "15px").attr("alignment-baseline","middle")
+    console.log(probability_text_height);  
+    
+    svg.append("text")
+      .attr("x", axis_padding)
+      .attr("y", probability_text_height)
+      .text(variant_win_str)
+      .style("font-size", "15px")
+      .attr("alignment-baseline","middle")
 
     // Render probability of variant A beating Variant B.
     doneRendering()
