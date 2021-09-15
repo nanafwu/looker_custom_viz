@@ -41,36 +41,33 @@ Set the 3rd numeric dimension as the "conversions".
 */
 function get_labels(queryResponse) {
   
-    var lbl_variant, lbl_visitors, lbl_conversions;
+    var lblVariant, lblVisitors, lblCnversions;
     
     // First check dimensions
     for(var dim of queryResponse.fields.dimensions) {
-      if (!lbl_variant && dim.type === "string") {
-        lbl_variant = dim.name
-      } else if (!lbl_visitors && dim.type == "number") {
-        lbl_visitors = dim.name
-      } else if (!lbl_conversions && dim.type == "number") {
-        lbl_conversions = dim.name
+      if (!lblVariant && dim.type === "string") {
+        lblVariant = dim.name
+      } else if (!lblVisitors && dim.type == "number") {
+        lblVisitors = dim.name
+      } else if (!lblCnversions && dim.type == "number") {
+        lblCnversions = dim.name
       }
     }
     // Next check measures
     for(var msr of queryResponse.fields.measures) {
-      if (!lbl_variant && msr.type === "string") {
-        lbl_variant = msr.name
-      } else if (!lbl_visitors && msr.type == "number") {
-        lbl_visitors = msr.name
-      } else if (!dim_conversions && msr.type == "number") {
-        lbl_conversions = msr.name
+      if (!lblVariant && msr.type === "string") {
+        lblVariant = msr.name
+      } else if (!lblVisitors && msr.type == "number") {
+        lblVisitors = msr.name
+      } else if (!lblCnversions && msr.type == "number") {
+        lblCnversions = msr.name
       }
     }
     
-    console.log('Variant:', lbl_variant,
-               '\nVisitors:', lbl_visitors,
-               '\nConversions', lbl_conversions)  
     return {
-      variant: lbl_variant,
-      visitors: lbl_visitors,
-      conversions: lbl_conversions
+      variant: lblVariant,
+      visitors: lblVisitors,
+      conversions: lblCnversions
     }
 }
 
