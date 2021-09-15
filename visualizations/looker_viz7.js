@@ -154,7 +154,8 @@ looker.plugins.visualizations.add({
     var graph_height = 250;
     var axis_padding = 40;
     var probability_text_height = graph_height + 30 + axis_padding;
-    var width = graph_width + axis_padding,
+    var legend_x = graph_width + axis_padding;
+    var width = graph_width + axis_padding + 200,
         height = probability_text_height + 50;
         
     // Clear any existing SVGs
@@ -172,6 +173,7 @@ looker.plugins.visualizations.add({
     var max_X = 0;
     
     // Draw beta distributions
+    var minPDFValue = 0.001; // Don't bother plotting if PDF value falls below this
     for (i = 0; i <= 1; i += 0.01) {
         var pdf_beta_A = jStat.beta.pdf(i, alpha_posterior_A, beta_posterior_A);
         var pdf_beta_B = jStat.beta.pdf(i, alpha_posterior_B, beta_posterior_B);
@@ -180,19 +182,23 @@ looker.plugins.visualizations.add({
           max_Y = pdf_beta_B;  
         }
         
-        if (pdf_beta_A > 0.001 && i > max_X) {
+        if (pdf_beta_A > minPDFValue && i > max_X) {
             max_X = i;
         }   
-        if (pdf_beta_B > 0.001 && i > max_X) {
+        if (pdf_beta_B > minPDFValue && i > max_X) {
             max_X = i;
         }    
-        beta_A.push([i, pdf_beta_A])
-        beta_B.push([i, pdf_beta_B])
+        if (pdf_beta_A > minPDFValue) {
+          beta_A.push([i, pdf_beta_A])
+        }
+        if (pdf_beta_B > minPDFValue) {
+          beta_B.push([i, pdf_beta_B])
+        }   
     }
     
     // add the x Axis
     var xScale = d3.scaleLinear()
-        .domain([0, max_X + 0.05])
+        .domain([0, max_X ])
         .range([0, graph_width]);
     
      var xAxis = d3.axisBottom().scale(xScale)
@@ -202,7 +208,7 @@ looker.plugins.visualizations.add({
     
      // Add the text label for X Axis
     svg.append("text")
-      .attr("x", graph_width / 2)
+      .attr("x", (graph_width + axis_padding) / 2)
       .attr("y", graph_height + axis_padding)
       .style("text-anchor", "middle")
       .style("font-size", "12px")
@@ -242,7 +248,8 @@ looker.plugins.visualizations.add({
         .attr("transform", "translate(" + axis_padding + ", 0)")
         .attr("d",  d3.line()
           .curve(d3.curveBasis)
-            .x(function(d) { return xScale(d[0]); })
+            .x(function(d) { 
+              return xScale(d[0]); })
             .y(function(d) { return y(d[1]); })
         );
 
@@ -263,10 +270,10 @@ looker.plugins.visualizations.add({
         );
 
     // Handmade legend
-    svg.append("circle").attr("cx",300).attr("cy",30).attr("r", 6).style("fill", "#69b3a2")
-    svg.append("circle").attr("cx",300).attr("cy",60).attr("r", 6).style("fill", "#404080")
-    svg.append("text").attr("x", 320).attr("y", 30).text(ab_test_data.variant_A_label).style("font-size", "15px").attr("alignment-baseline","middle")
-    svg.append("text").attr("x", 320).attr("y", 60).text(ab_test_data.variant_B_label).style("font-size", "15px").attr("alignment-baseline","middle")
+    svg.append("circle").attr("cx", legend_x).attr("cy",30).attr("r", 6).style("fill", "#69b3a2")
+    svg.append("circle").attr("cx",legend_x).attr("cy",60).attr("r", 6).style("fill", "#404080")
+    svg.append("text").attr("x", legend_x + 20).attr("y", 30).text(ab_test_data.variant_A_label).style("font-size", "15px").attr("alignment-baseline","middle")
+    svg.append("text").attr("x", legend_x + 20).attr("y", 60).text(ab_test_data.variant_B_label).style("font-size", "15px").attr("alignment-baseline","middle")
 
      // Calculate which variant has a higher conversion rate
     var variant_win_str = compare_conversion_probability(
