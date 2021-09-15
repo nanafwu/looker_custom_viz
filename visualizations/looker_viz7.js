@@ -131,20 +131,19 @@ looker.plugins.visualizations.add({
     console.log('-- Update Async --')
     console.log('data: ', data),
     console.log('config: ', config)
-    //console.log('details', details),
     console.log('queryResponse', queryResponse)
 
-    var alpha_prior = 1;
-    var beta_prior = 1;
+    var alphaPrior = 1;
+    var betaPrior = 1;
     
     var labels = get_labels(queryResponse);
     var abTestData = get_ab_test_data(data, labels.variant, labels.visitors, labels.conversions)
     
-    var alpha_posterior_A = alpha_prior + abTestData.conversionsFromA;
-    var beta_posterior_A = beta_prior + abTestData.visitorsToA - abTestData.conversionsFromA;
+    var alpha_posterior_A = alphaPrior + abTestData.conversionsFromA;
+    var beta_posterior_A = betaPrior + abTestData.visitorsToA - abTestData.conversionsFromA;
     
-    var alpha_posterior_B = alpha_prior + abTestData.conversionsFromB;
-    var beta_posterior_B = beta_prior + abTestData.visitorsToB - abTestData.conversionsFromB;
+    var alpha_posterior_B = alphaPrior + abTestData.conversionsFromB;
+    var beta_posterior_B = betaPrior + abTestData.visitorsToB - abTestData.conversionsFromB;
     
     // set the dimensions and margins of the graph
     var graph_width = 400;
@@ -164,10 +163,11 @@ looker.plugins.visualizations.add({
         .attr("width", width)
         .attr("height", height)
     
-    var beta_A = []
-    var beta_B = []
-    var max_Y = 0;
-    var max_X = 0;
+    // Calculate PDF points of posterior distribution
+    var betaA = []
+    var betaB = []
+    var maxY = 0;
+    var maxX = 0;
     
     // Draw beta distributions
     var minPDFValue = 0.001; // Don't bother plotting if PDF value falls below this
@@ -175,27 +175,27 @@ looker.plugins.visualizations.add({
         var pdf_beta_A = jStat.beta.pdf(i, alpha_posterior_A, beta_posterior_A);
         var pdf_beta_B = jStat.beta.pdf(i, alpha_posterior_B, beta_posterior_B);
         
-        if (pdf_beta_B > max_Y || pdf_beta_A > max_Y) {
-          max_Y = pdf_beta_B;  
+        if (pdf_beta_B > maxY || pdf_beta_A > maxY) {
+          maxY = pdf_beta_B;  
         }
         
-        if (pdf_beta_A > minPDFValue && i > max_X) {
-            max_X = i;
+        if (pdf_beta_A > minPDFValue && i > maxX) {
+            maxX = i;
         }   
-        if (pdf_beta_B > minPDFValue && i > max_X) {
-            max_X = i;
+        if (pdf_beta_B > minPDFValue && i > maxX) {
+            maxX = i;
         }    
         if (pdf_beta_A > minPDFValue) {
-          beta_A.push([i, pdf_beta_A])
+          betaA.push([i, pdf_beta_A])
         }
         if (pdf_beta_B > minPDFValue) {
-          beta_B.push([i, pdf_beta_B])
+          betaB.push([i, pdf_beta_B])
         }   
     }
     
     // add the x Axis
     var xScale = d3.scaleLinear()
-        .domain([0, max_X ])
+        .domain([0, maxX ])
         .range([0, graph_width]);
     
      var xAxis = d3.axisBottom().scale(xScale)
@@ -218,7 +218,7 @@ looker.plugins.visualizations.add({
     // add the y Axis
     var y = d3.scaleLinear()
           .range([graph_height, 0])
-          .domain([0, max_Y]);
+          .domain([0, maxY]);
     
     svg.append("g")
         .attr("transform", "translate(" + axis_padding + ", 0)")
@@ -236,7 +236,7 @@ looker.plugins.visualizations.add({
     // Plot the area of posterior A
     svg.append("path")
         .attr("class", "mypath")
-        .datum(beta_A)
+        .datum(betaA)
         .attr("fill", "#69b3a2")
         .attr("opacity", ".6")
         .attr("stroke", "#000")
@@ -253,7 +253,7 @@ looker.plugins.visualizations.add({
     // Plot the area of posterior B
     svg.append("path")
         .attr("class", "mypath")
-        .datum(beta_B)
+        .datum(betaB)
         .attr("fill", "#404080")
         .attr("opacity", ".6")
         .attr("stroke", "#000")
