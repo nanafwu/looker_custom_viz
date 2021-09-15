@@ -6,29 +6,29 @@
  **/
 
 function compare_conversion_probability (
-  variant_A_label, variant_B_label,
-  alpha_posterior_A, beta_posterior_A, alpha_posterior_B, beta_posterior_B) {
+  variantALabel, variantBLabel,
+  alphaPosteriorA, betaPosteriorA, alphaPosteriorB, betaPosteriorB) {
   var samples = 3000;
-  var A_greater_than_B = 0;
-  var B_greater_than_A = 0;
+  var aGreaterThanB = 0;
+  var bGreaterThanA = 0;
     
-  var comparison_calculations = _.map(_.range(samples), function(i){ 
-    var sample_A = jStat.beta.sample(alpha_posterior_A, beta_posterior_A); 
-    var sample_B = jStat.beta.sample(alpha_posterior_B, beta_posterior_B); 
-    if (sample_A > sample_B) {
-      A_greater_than_B += 1;
+  _.map(_.range(samples), function(i){ 
+    var sampleA = jStat.beta.sample(alphaPosteriorA, betaPosteriorA); 
+    var sampleB = jStat.beta.sample(alphaPosteriorB, betaPosteriorB); 
+    if (sampleA > sampleB) {
+      aGreaterThanB += 1;
     } else {
-      B_greater_than_A += 1;
+      bGreaterThanA += 1;
     }  
   }); 
   
-  var prob_A_greater_than_B = (A_greater_than_B / samples) * 100;
-  var prob_B_greater_than_A = (B_greater_than_A / samples) * 100;
+  var probAGreaterThan_B = (aGreaterThanB / samples) * 100;
+  var probBGreaterThan_A = (bGreaterThanA / samples) * 100;
   
-  if (prob_A_greater_than_B > B_greater_than_A) {
-    return 'There is a ' + prob_A_greater_than_B + '% chance that ' + variant_A_label + ' converts better than ' + variant_B_label;
+  if (probAGreaterThan_B > probBGreaterThan_A) {
+    return 'There is a ' + probAGreaterThan_B + '% chance that ' + variantALabel + ' converts better than ' + variantBLabel;
   } else {
-    return 'There is a ' + prob_B_greater_than_A + '% chance that ' + variant_B_label + ' converts better than ' + variant_A_label;
+    return 'There is a ' + probBGreaterThan_A + '% chance that ' + variantBLabel + ' converts better than ' + variantALabel;
   }
 }
 
@@ -281,7 +281,6 @@ looker.plugins.visualizations.add({
       ab_test_data.variant_B_label,
       alpha_posterior_A, beta_posterior_A, alpha_posterior_B, beta_posterior_B);
     
-    console.log(probability_text_height);  
     
     svg.append("text")
       .attr("x", axis_padding)
