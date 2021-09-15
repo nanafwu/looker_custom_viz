@@ -76,24 +76,24 @@ function get_labels(queryResponse) {
 Get the data to use for AB test calculations.
 Only check first two rows of data
 */
-function get_ab_test_data(data, label_variant, label_visitors, label_conversions) {
+function get_ab_test_data(data, labelVariant, labelVisitors, labelConversions) {
 
-    var visitors_to_A = data[0][label_visitors].value; 
-    var visitors_to_B = data[1][label_visitors].value; 
+    var visitorsToA = data[0][labelVisitors].value; 
+    var visitorsToB = data[1][labelVisitors].value; 
     
-    var conversions_from_A = data[0][label_conversions].value; 
-    var conversions_from_B = data[1][label_conversions].value; 
+    var conversionsFromA = data[0][labelConversions].value; 
+    var conversionsFromB = data[1][labelConversions].value; 
   
-    var variant_A_label = data[0][label_variant].value; 
-    var variant_B_label = data[1][label_variant].value;
+    var variantALabel = data[0][labelVariant].value; 
+    var variantBLabel = data[1][labelVariant].value;
       
     return {
-      variant_A_label: variant_A_label,
-      variant_B_label: variant_B_label,
-      visitors_to_A: visitors_to_A,
-      visitors_to_B: visitors_to_B,
-      conversions_from_A: conversions_from_A,
-      conversions_from_B: conversions_from_B
+      variantALabel: variantALabel,
+      variantBLabel: variantBLabel,
+      visitorsToA: visitorsToA,
+      visitorsToB: visitorsToB,
+      conversionsFromA: conversionsFromA,
+      conversionsFromB: conversionsFromB
     }
 }
 
@@ -138,13 +138,13 @@ looker.plugins.visualizations.add({
     var beta_prior = 1;
     
     var labels = get_labels(queryResponse);
-    var ab_test_data = get_ab_test_data(data, labels.variant, labels.visitors, labels.conversions)
+    var abTestData = get_ab_test_data(data, labels.variant, labels.visitors, labels.conversions)
     
-    var alpha_posterior_A = alpha_prior + ab_test_data.conversions_from_A;
-    var beta_posterior_A = beta_prior + ab_test_data.visitors_to_A - ab_test_data.conversions_from_A;
+    var alpha_posterior_A = alpha_prior + abTestData.conversionsFromA;
+    var beta_posterior_A = beta_prior + abTestData.visitorsToA - abTestData.conversionsFromA;
     
-    var alpha_posterior_B = alpha_prior + ab_test_data.conversions_from_B;
-    var beta_posterior_B = beta_prior + ab_test_data.visitors_to_B - ab_test_data.conversions_from_B;
+    var alpha_posterior_B = alpha_prior + abTestData.conversionsFromB;
+    var beta_posterior_B = beta_prior + abTestData.visitorsToB - abTestData.conversionsFromB;
     
     // set the dimensions and margins of the graph
     var graph_width = 400;
@@ -269,13 +269,13 @@ looker.plugins.visualizations.add({
     // Handmade legend
     svg.append("circle").attr("cx", legend_x).attr("cy",30).attr("r", 6).style("fill", "#69b3a2")
     svg.append("circle").attr("cx",legend_x).attr("cy",60).attr("r", 6).style("fill", "#404080")
-    svg.append("text").attr("x", legend_x + 20).attr("y", 30).text(ab_test_data.variant_A_label).style("font-size", "15px").attr("alignment-baseline","middle")
-    svg.append("text").attr("x", legend_x + 20).attr("y", 60).text(ab_test_data.variant_B_label).style("font-size", "15px").attr("alignment-baseline","middle")
+    svg.append("text").attr("x", legend_x + 20).attr("y", 30).text(abTestData.variantALabel).style("font-size", "15px").attr("alignment-baseline","middle")
+    svg.append("text").attr("x", legend_x + 20).attr("y", 60).text(abTestData.variantBLabel).style("font-size", "15px").attr("alignment-baseline","middle")
 
      // Calculate which variant has a higher conversion rate
     var variant_win_str = compare_conversion_probability(
-      ab_test_data.variant_A_label,
-      ab_test_data.variant_B_label,
+      abTestData.variantALabel,
+      abTestData.variantBLabel,
       alpha_posterior_A, beta_posterior_A, alpha_posterior_B, beta_posterior_B);
     
     
