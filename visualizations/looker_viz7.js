@@ -22,13 +22,13 @@ function compareConversionProbability (
     }  
   }); 
   
-  var probAGreaterThan_B = (aGreaterThanB / samples) * 100;
-  var probBGreaterThan_A = (bGreaterThanA / samples) * 100;
+  var probAGreaterThan_B = Math.round((aGreaterThanB / samples) * 100);
+  var probBGreaterThan_A = Math.round((bGreaterThanA / samples) * 100);
   
   if (probAGreaterThan_B > probBGreaterThan_A) {
-    return 'There is a ' + probAGreaterThan_B + '% chance that ' + variantALabel + ' converts better than ' + variantBLabel;
+    return 'There is a ' + probAGreaterThan_B + '% chance that ' + variantALabel + ' converts better than ' + variantBLabel + ".";
   } else {
-    return 'There is a ' + probBGreaterThan_A + '% chance that ' + variantBLabel + ' converts better than ' + variantALabel;
+    return 'There is a ' + probBGreaterThan_A + '% chance that ' + variantBLabel + ' converts better than ' + variantALabel + ".";
   }
 }
 
@@ -100,15 +100,15 @@ function getABTestData(data, labelVariant, labelVisitors, labelConversions) {
 looker.plugins.visualizations.add({
 
  options: {
-    first_option: {
-      type: "string",
-      label: "My First Option",
-      default: "Default Value"
-    },
-    second_option: {
+    prior_alpha: {
       type: "number",
-      label: "My Second Option",
-      default: 42
+      label: "Prior Alpha",
+      default: 1
+    },
+    prior_beta: {
+      type: "number",
+      label: "Prior Beta",
+      default: 1
     }
   },
   
@@ -118,9 +118,7 @@ looker.plugins.visualizations.add({
   * data is passed to it.
   **/
   create: function(element, config){
-    console.log('-- Creating something --')
-    element.style.fontFamily = `"Open Sans", "Helvetica", sans-serif`
-    //element.innerHTML = "";
+    element.style.fontFamily = `"Open Sans", "Helvetica", sans-serif`;
   },
 
  /**
@@ -146,13 +144,14 @@ looker.plugins.visualizations.add({
     var betaPosteriorB = betaPrior + abTestData.visitorsToB - abTestData.conversionsFromB;
     
     // set the dimensions and margins of the graph
-    var graphWidth = 400;
+    var graphWidth = 500;
     var graphHeight = 250;
     var axisPadding = 40;
-    var probabilityTextHeight = graphHeight + 30 + axisPadding;
-    var legendX = graphWidth + axisPadding;
+    var legendX = graphWidth / 2,
+        legendY = graphHeight + 30 + axisPadding;
+    var probabilityTextHeight = legendY + 70;
     var width = graphWidth + axisPadding + 200,
-        height = probabilityTextHeight + 50;
+        height = probabilityTextHeight + 20;
         
     // Clear any existing SVGs
     d3.select(element).selectAll("*").remove();
@@ -195,7 +194,7 @@ looker.plugins.visualizations.add({
     
     // add the x Axis
     var xScale = d3.scaleLinear()
-        .domain([0, maxX ])
+        .domain([0, maxX * 1.25]) // roughly center visualization
         .range([0, graphWidth]);
     
      var xAxis = d3.axisBottom().scale(xScale)
@@ -205,8 +204,8 @@ looker.plugins.visualizations.add({
     
      // Add the text label for X Axis
     svg.append("text")
-      .attr("x", (graphWidth + axisPadding) / 2)
-      .attr("y", graphHeight + axisPadding)
+      .attr("x", width - 140)
+      .attr("y", graphHeight + 5)
       .style("text-anchor", "middle")
       .style("font-size", "12px")
       .text("Conversion Rate");
@@ -266,12 +265,21 @@ looker.plugins.visualizations.add({
             .y(function(d) { return yScale(d[1]); })
         );
 
-    // Handmade legend
-    svg.append("circle").attr("cx", legendX).attr("cy",30).attr("r", 6).style("fill", "#69b3a2")
-    svg.append("circle").attr("cx",legendX).attr("cy",60).attr("r", 6).style("fill", "#404080")
-    svg.append("text").attr("x", legendX + 20).attr("y", 30).text(abTestData.variantALabel).style("font-size", "15px").attr("alignment-baseline","middle")
-    svg.append("text").attr("x", legendX + 20).attr("y", 60).text(abTestData.variantBLabel).style("font-size", "15px").attr("alignment-baseline","middle")
-
+    // Handmade legend 
+    svg.append("text").attr("x", width / 5).attr("y", legendY - 30).text("95% Credible Intervals for Variant's Conversion Rate:").style("font-size", "14px").attr("alignment-baseline","middle")
+    svg.append("circle").attr("cx", legendX).attr("cy",legendY).attr("r", 6).style("fill", "#69b3a2")
+    svg.append("circle").attr("cx",legendX).attr("cy",legendY+30).attr("r", 6).style("fill", "#404080")
+    svg.append("text").attr("x", legendX + 20).attr("y", legendY)
+      .text(abTestData.variantALabel + ": (xxx, xxxx)")
+      .style("font-size", "14px")
+      .attr("alignment-baseline","middle");
+    
+    svg.append("text").attr("x", legendX + 20).attr("y", legendY+30)
+      .text(abTestData.variantBLabel + ": (xxx, xxxx)")
+      .style("font-size", "14px")
+      .attr("alignment-baseline","middle")
+    ;
+    
      // Calculate which variant has a higher conversion rate
     var variant_win_str = compareConversionProbability(
       abTestData.variantALabel,
@@ -280,11 +288,12 @@ looker.plugins.visualizations.add({
     
     
     svg.append("text")
-      .attr("x", axisPadding)
+      .attr("x", "40%")
       .attr("y", probabilityTextHeight)
       .text(variant_win_str)
-      .style("font-size", "15px")
-      .attr("alignment-baseline","middle")
+      .style("font-size", "14px")
+      .attr("dominant-baseline", "central")
+      .attr("text-anchor", "middle");
 
     // Render probability of variant A beating Variant B.
     doneRendering()
