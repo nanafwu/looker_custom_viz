@@ -163,8 +163,8 @@ looker.plugins.visualizations.add({
     var betaPosteriorB = betaPrior + abTestData.visitorsToB - abTestData.conversionsFromB;
     
     var credibleIntervalPercent = config.credibleIntervalPercent;
-    var credibleIntervalA = calculateCredibleInterval(credibleInteralPercent, alphaPosteriorA, betaPosteriorA);
-    var credibleIntervalB = calculateCredibleInterval(credibleInteralPercent, alphaPosteriorB, betaPosteriorB);
+    var credibleIntervalA = calculateCredibleInterval(credibleIntervalPercent, alphaPosteriorA, betaPosteriorA);
+    var credibleIntervalB = calculateCredibleInterval(credibleIntervalPercent, alphaPosteriorB, betaPosteriorB);
 
     // set the dimensions and margins of the graph
     var graphWidth = 500;
@@ -292,7 +292,7 @@ looker.plugins.visualizations.add({
         );
 
     // Handmade legend 
-    svg.append("text").attr("x", width / 5).attr("y", legendY - 30).text(credibleInteralPercent + "% Credible Intervals for Variant's Conversion %:").style("font-size", "14px").attr("alignment-baseline","middle")
+    svg.append("text").attr("x", width / 5).attr("y", legendY - 30).text(credibleIntervalPercent + "% Credible Intervals for Variant's Conversion %:").style("font-size", "14px").attr("alignment-baseline","middle")
     svg.append("circle").attr("cx", legendX).attr("cy",legendY).attr("r", 6).style("fill", "#69b3a2")
     svg.append("circle").attr("cx",legendX).attr("cy",legendY+30).attr("r", 6).style("fill", "#404080")
     
