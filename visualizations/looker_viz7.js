@@ -106,8 +106,8 @@ function calculateCredibleInterval(ciPercent, alpha, beta) {
   var ciProbability = ((100 - ciPercent) / 2) / 100;
   console.log(ciProbability + " CI: ", alpha, "/", beta);
   return {
-    lowerInterval: jStat.beta.inv(ciProbability, alpha, beta),
-    upperInterval: jStat.beta.inv(1 - ciProbability, alpha, beta)
+    lowerInterval: (jStat.beta.inv(ciProbability, alpha, beta) * 100).toFixed(2),
+    upperInterval: (jStat.beta.inv(1 - ciProbability, alpha, beta) * 100).toFixed(2)
   }
 }
 
@@ -186,7 +186,7 @@ looker.plugins.visualizations.add({
     var maxY = 0;
     var maxX = 0;
     
-    // Draw beta distributions
+    // Draw beta distributions for conversion percentage
     var minPDFValue = 0.001; // Don't bother plotting if PDF value falls below this
     for (i = 0; i <= 1; i += 0.01) {
         var pdfBetaA = jStat.beta.pdf(i, alphaPosteriorA, betaPosteriorA);
@@ -195,22 +195,25 @@ looker.plugins.visualizations.add({
         if (pdfBetaB > maxY || pdfBetaA > maxY) {
           maxY = pdfBetaB;  
         }
+
+        var percentageX = i * 100;
         
-        if (pdfBetaA > minPDFValue && i > maxX) {
-            maxX = i;
+        if (pdfBetaA > minPDFValue && percentageX > maxX) {
+          // multiply by 100 to turn into percentage
+          maxX = percentageX;
         }   
-        if (pdfBetaB > minPDFValue && i > maxX) {
-            maxX = i;
+        if (pdfBetaB > minPDFValue && percentageX > maxX) {
+          maxX = percentageX;
         }    
         if (pdfBetaA > minPDFValue) {
-          betaA.push([i, pdfBetaA])
+          betaA.push([percentageX, pdfBetaA])
         }
         if (pdfBetaB > minPDFValue) {
-          betaB.push([i, pdfBetaB])
+          betaB.push([percentageX, pdfBetaB])
         }   
     }
     
-    // add the x Axis
+    // add the x Axis for conversion percentage
     var xScale = d3.scaleLinear()
         .domain([0, maxX * 1.25]) // roughly center visualization
         .range([0, graphWidth]);
@@ -222,11 +225,11 @@ looker.plugins.visualizations.add({
     
      // Add the text label for X Axis
     svg.append("text")
-      .attr("x", width - 140)
+      .attr("x", width - 150)
       .attr("y", graphHeight + 5)
       .style("text-anchor", "middle")
       .style("font-size", "12px")
-      .text("Conversion Rate");
+      .text("Conversion %");
     
     svg.append("g")
       .attr("transform", "translate(" + axisPadding + "," + graphHeight + ")")
@@ -284,28 +287,27 @@ looker.plugins.visualizations.add({
         );
 
     // Handmade legend 
-    svg.append("text").attr("x", width / 5).attr("y", legendY - 30).text(credibleInteralPercent + "% Credible Intervals for Variant's Conversion Rate:").style("font-size", "14px").attr("alignment-baseline","middle")
+    svg.append("text").attr("x", width / 5).attr("y", legendY - 30).text(credibleInteralPercent + "% Credible Intervals for Variant's Conversion %:").style("font-size", "14px").attr("alignment-baseline","middle")
     svg.append("circle").attr("cx", legendX).attr("cy",legendY).attr("r", 6).style("fill", "#69b3a2")
     svg.append("circle").attr("cx",legendX).attr("cy",legendY+30).attr("r", 6).style("fill", "#404080")
     
     // Display credible interval calculations
     svg.append("text").attr("x", legendX + 20).attr("y", legendY)
-      .text(abTestData.variantALabel + ": (" + credibleIntervalA.lowerInterval + ", " + credibleIntervalA.upperInterval + ")")
+      .text(abTestData.variantALabel + ": (" + credibleIntervalA.lowerInterval + "%, " + credibleIntervalA.upperInterval + "%)")
       .style("font-size", "14px")
       .attr("alignment-baseline","middle");
     
     svg.append("text").attr("x", legendX + 20).attr("y", legendY + 30)
-      .text(abTestData.variantBLabel + ": (" + credibleIntervalB.lowerInterval + ", " + credibleIntervalB.upperInterval + ")")
+      .text(abTestData.variantBLabel + ": (" + credibleIntervalB.lowerInterval + "%, " + credibleIntervalB.upperInterval + "%)")
       .style("font-size", "14px")
       .attr("alignment-baseline","middle")
     ;
     
-     // Calculate which variant has a higher conversion rate
+     // Calculate which variant has a higher conversion
     var variant_win_str = compareConversionProbability(
       abTestData.variantALabel,
       abTestData.variantBLabel,
       alphaPosteriorA, betaPosteriorA, alphaPosteriorB, betaPosteriorB);
-    
     
     svg.append("text")
       .attr("x", "40%")
