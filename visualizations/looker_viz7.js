@@ -114,15 +114,20 @@ function calculateCredibleInterval(ciPercent, alpha, beta) {
 looker.plugins.visualizations.add({
 
  options: {
-    prior_alpha: {
+    alphaPrior: {
       type: "number",
       label: "Prior Alpha",
       default: 1
     },
-    prior_beta: {
+    betaPrior: {
       type: "number",
       label: "Prior Beta",
       default: 1
+    },
+    credibleIntervalPercent: {
+      type: "number",
+      label: "Credible Interval %",
+      default: 95  
     }
   },
   
@@ -145,8 +150,8 @@ looker.plugins.visualizations.add({
     console.log('config: ', config)
     console.log('queryResponse', queryResponse)
 
-    var alphaPrior = 1;
-    var betaPrior = 1;
+    var alphaPrior = config.alphaPrior;
+    var betaPrior = config.betaPrior;
     
     var labels = getLabels(queryResponse);
     var abTestData = getABTestData(data, labels.variant, labels.visitors, labels.conversions)
@@ -157,7 +162,7 @@ looker.plugins.visualizations.add({
     var alphaPosteriorB = alphaPrior + abTestData.conversionsFromB;
     var betaPosteriorB = betaPrior + abTestData.visitorsToB - abTestData.conversionsFromB;
     
-    var credibleInteralPercent = 95;
+    var credibleIntervalPercent = config.credibleIntervalPercent;
     var credibleIntervalA = calculateCredibleInterval(credibleInteralPercent, alphaPosteriorA, betaPosteriorA);
     var credibleIntervalB = calculateCredibleInterval(credibleInteralPercent, alphaPosteriorB, betaPosteriorB);
 
