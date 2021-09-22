@@ -97,6 +97,20 @@ function getABTestData(data, labelVariant, labelVisitors, labelConversions) {
     }
 }
 
+/*
+Calculate credible intervals with the Highest Posterior Densities
+for a given beta distribution.
+*/
+function calculateCredibleInterval(ciPercent, alpha, beta) {
+
+  var ciProbability = ((100 - ciPercent) / 2) / 100;
+  console.log(ciProbability + " CI: ", alpha, "/", beta);
+  return {
+    lowerInterval: jStat.beta.inv(ciProbability, alpha, beta),
+    upperInterval: jStat.beta.inv(1 - ciProbability, alpha, beta)
+  }
+}
+
 looker.plugins.visualizations.add({
 
  options: {
@@ -143,11 +157,15 @@ looker.plugins.visualizations.add({
     var alphaPosteriorB = alphaPrior + abTestData.conversionsFromB;
     var betaPosteriorB = betaPrior + abTestData.visitorsToB - abTestData.conversionsFromB;
     
+    var credibleInteralPercent = 95;
+    var credibleIntervalA = calculateCredibleInterval(credibleInteralPercent, alphaPosteriorA, betaPosteriorA);
+    var credibleIntervalB = calculateCredibleInterval(credibleInteralPercent, alphaPosteriorB, betaPosteriorB);
+
     // set the dimensions and margins of the graph
     var graphWidth = 500;
     var graphHeight = 250;
     var axisPadding = 40;
-    var legendX = graphWidth / 2,
+    var legendX = graphWidth / 3,
         legendY = graphHeight + 30 + axisPadding;
     var probabilityTextHeight = legendY + 70;
     var width = graphWidth + axisPadding + 200,
@@ -266,16 +284,18 @@ looker.plugins.visualizations.add({
         );
 
     // Handmade legend 
-    svg.append("text").attr("x", width / 5).attr("y", legendY - 30).text("95% Credible Intervals for Variant's Conversion Rate:").style("font-size", "14px").attr("alignment-baseline","middle")
+    svg.append("text").attr("x", width / 5).attr("y", legendY - 30).text(credibleInteralPercent + "% Credible Intervals for Variant's Conversion Rate:").style("font-size", "14px").attr("alignment-baseline","middle")
     svg.append("circle").attr("cx", legendX).attr("cy",legendY).attr("r", 6).style("fill", "#69b3a2")
     svg.append("circle").attr("cx",legendX).attr("cy",legendY+30).attr("r", 6).style("fill", "#404080")
+    
+    // Display credible interval calculations
     svg.append("text").attr("x", legendX + 20).attr("y", legendY)
-      .text(abTestData.variantALabel + ": (xxx, xxxx)")
+      .text(abTestData.variantALabel + ": (" + credibleIntervalA.lowerInterval + ", " + credibleIntervalA.upperInterval + ")")
       .style("font-size", "14px")
       .attr("alignment-baseline","middle");
     
-    svg.append("text").attr("x", legendX + 20).attr("y", legendY+30)
-      .text(abTestData.variantBLabel + ": (xxx, xxxx)")
+    svg.append("text").attr("x", legendX + 20).attr("y", legendY + 30)
+      .text(abTestData.variantBLabel + ": (" + credibleIntervalB.lowerInterval + ", " + credibleIntervalB.upperInterval + ")")
       .style("font-size", "14px")
       .attr("alignment-baseline","middle")
     ;
