@@ -175,7 +175,7 @@ looker.plugins.visualizations.add({
     var legendX = graphWidth / 10,
         legendY = graphHeight + 50 + axisPadding;
     var probabilityTextHeight = legendY + 70;
-    var width = graphWidth + axisPadding + 200,
+    var width = graphWidth + axisPadding + 1000,
         height = probabilityTextHeight + 20;
         
     // Clear any existing SVGs
@@ -233,7 +233,7 @@ looker.plugins.visualizations.add({
     
      // Add the text label for X Axis
     svg.append("text")
-      .attr("x", width - 150)
+      .attr("x", graphWidth + 100)
       .attr("y", graphHeight + 5)
       .style("text-anchor", "middle")
       .style("font-size", "12px")
@@ -295,7 +295,7 @@ looker.plugins.visualizations.add({
         );
 
     // Handmade legend 
-    svg.append("text").attr("x", legendX).attr("y", legendY - 30).text(credibleIntervalPercent + "% Credible Intervals for Variant's Conversion %:").style("font-size", "14px").attr("alignment-baseline","middle")
+    svg.append("text").attr("x", legendX).attr("y", legendY - 30).text(credibleIntervalPercent + "% Credible Intervals for Variant's Conversion %:").style("font-size", "14px").style("font-weight", "bold").attr("alignment-baseline","middle")
     svg.append("circle").attr("cx", legendX + 5).attr("cy",legendY).attr("r", 6).style("fill", "#69b3a2")
     svg.append("circle").attr("cx",legendX + 5).attr("cy",legendY+30).attr("r", 6).style("fill", "#404080")
     
@@ -308,8 +308,7 @@ looker.plugins.visualizations.add({
     svg.append("text").attr("x", legendX + 20).attr("y", legendY + 30)
       .text(abTestData.variantBLabel + ": (" + credibleIntervalB.lowerInterval + "%, " + credibleIntervalB.upperInterval + "%)")
       .style("font-size", "14px")
-      .attr("alignment-baseline","middle")
-    ;
+      .attr("alignment-baseline","middle");
     
      // Calculate which variant has a higher conversion
     var variant_win_str = compareConversionProbability(
@@ -318,12 +317,11 @@ looker.plugins.visualizations.add({
       alphaPosteriorA, betaPosteriorA, alphaPosteriorB, betaPosteriorB);
     
     svg.append("text")
-      .attr("x", "40%")
+      .attr("x", legendX-5)
       .attr("y", probabilityTextHeight)
       .text(variant_win_str)
       .style("font-size", "14px")
-      .attr("dominant-baseline", "central")
-      .attr("text-anchor", "middle");
+      .style("font-weight", "bold");
 
     // Render probability of variant A beating Variant B.
     doneRendering()
