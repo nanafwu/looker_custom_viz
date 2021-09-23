@@ -125,9 +125,11 @@ looker.plugins.visualizations.add({
       default: 1
     },
     credibleIntervalPercent: {
-      type: "number",
+      type: "range",
       label: "Credible Interval %",
-      default: 95  
+      default: 95,
+      max: 95,
+      min: 10
     }
   },
   
@@ -168,7 +170,7 @@ looker.plugins.visualizations.add({
 
     // set the dimensions and margins of the graph
     var graphWidth = 500;
-    var graphHeight = 250;
+    var graphHeight = 230;
     var axisPadding = 40;
     var legendX = graphWidth / 3,
         legendY = graphHeight + 30 + axisPadding;
