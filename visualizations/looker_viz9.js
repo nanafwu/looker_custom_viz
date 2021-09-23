@@ -151,7 +151,7 @@ looker.plugins.visualizations.add({
     console.log('data: ', data),
     console.log('config: ', config)
     console.log('queryResponse', queryResponse)
-
+    
     var alphaPrior = config.alphaPrior;
     var betaPrior = config.betaPrior;
     
@@ -170,7 +170,7 @@ looker.plugins.visualizations.add({
 
     // set the dimensions and margins of the graph
     var graphWidth = 500;
-    var graphHeight = 230;
+    var graphHeight = 250;
     var axisPadding = 40;
     var legendX = graphWidth / 3,
         legendY = graphHeight + 30 + axisPadding;
@@ -194,7 +194,7 @@ looker.plugins.visualizations.add({
     var maxX = 0;
     
     // Draw beta distributions for conversion percentage
-    var minPDFValue = 0.001; // Don't bother plotting if PDF value falls below this
+    var minPDFValue = 0.1; // Don't bother plotting if PDF value falls below this
     for (i = 0; i <= 1; i += 0.01) {
         var pdfBetaA = jStat.beta.pdf(i, alphaPosteriorA, betaPosteriorA);
         var pdfBetaB = jStat.beta.pdf(i, alphaPosteriorB, betaPosteriorB);
@@ -212,17 +212,18 @@ looker.plugins.visualizations.add({
         if (pdfBetaB > minPDFValue && percentageX > maxX) {
           maxX = percentageX;
         }    
-        if (pdfBetaA > minPDFValue) {
-          betaA.push([percentageX, pdfBetaA])
-        }
-        if (pdfBetaB > minPDFValue) {
-          betaB.push([percentageX, pdfBetaB])
-        }   
+        betaA.push([percentageX, pdfBetaA]);
+        betaB.push([percentageX, pdfBetaB]);
     }
+    
+    // don't draw past any values of maxX * 1.25 to center visualization
+    var maxXDraw = maxX * 1.25;
+    var betaADraw = _.filter(betaA, function(arr){ return arr[0] < maxXDraw; });
+    var betaBDraw = _.filter(betaB, function(arr){ return arr[0] < maxXDraw; });
     
     // add the x Axis for conversion percentage
     var xScale = d3.scaleLinear()
-        .domain([0, maxX * 1.25]) // roughly center visualization
+        .domain([0, maxXDraw])
         .range([0, graphWidth]);
     
      var xAxis = d3.axisBottom().scale(xScale)
@@ -263,7 +264,7 @@ looker.plugins.visualizations.add({
     // Plot the area of posterior A
     svg.append("path")
         .attr("class", "mypath")
-        .datum(betaA)
+        .datum(betaADraw)
         .attr("fill", "#69b3a2")
         .attr("opacity", ".6")
         .attr("stroke", "#000")
@@ -280,7 +281,7 @@ looker.plugins.visualizations.add({
     // Plot the area of posterior B
     svg.append("path")
         .attr("class", "mypath")
-        .datum(betaB)
+        .datum(betaBDraw)
         .attr("fill", "#404080")
         .attr("opacity", ".6")
         .attr("stroke", "#000")
