@@ -172,8 +172,8 @@ looker.plugins.visualizations.add({
     var graphWidth = 500;
     var graphHeight = 250;
     var axisPadding = 40;
-    var legendX = graphWidth / 3,
-        legendY = graphHeight + 30 + axisPadding;
+    var legendX = graphWidth / 10,
+        legendY = graphHeight + 50 + axisPadding;
     var probabilityTextHeight = legendY + 70;
     var width = graphWidth + axisPadding + 200,
         height = probabilityTextHeight + 20;
@@ -194,7 +194,7 @@ looker.plugins.visualizations.add({
     var maxX = 0;
     
     // Draw beta distributions for conversion percentage
-    var minPDFValue = 0.1; // Don't bother plotting if PDF value falls below this
+    var minPDFValue = 0.1;
     for (i = 0; i <= 1; i += 0.01) {
         var pdfBetaA = jStat.beta.pdf(i, alphaPosteriorA, betaPosteriorA);
         var pdfBetaB = jStat.beta.pdf(i, alphaPosteriorB, betaPosteriorB);
@@ -295,9 +295,9 @@ looker.plugins.visualizations.add({
         );
 
     // Handmade legend 
-    svg.append("text").attr("x", width / 5).attr("y", legendY - 30).text(credibleIntervalPercent + "% Credible Intervals for Variant's Conversion %:").style("font-size", "14px").attr("alignment-baseline","middle")
-    svg.append("circle").attr("cx", legendX).attr("cy",legendY).attr("r", 6).style("fill", "#69b3a2")
-    svg.append("circle").attr("cx",legendX).attr("cy",legendY+30).attr("r", 6).style("fill", "#404080")
+    svg.append("text").attr("x", legendX).attr("y", legendY - 30).text(credibleIntervalPercent + "% Credible Intervals for Variant's Conversion %:").style("font-size", "14px").attr("alignment-baseline","middle")
+    svg.append("circle").attr("cx", legendX + 5).attr("cy",legendY).attr("r", 6).style("fill", "#69b3a2")
+    svg.append("circle").attr("cx",legendX + 5).attr("cy",legendY+30).attr("r", 6).style("fill", "#404080")
     
     // Display credible interval calculations
     svg.append("text").attr("x", legendX + 20).attr("y", legendY)
