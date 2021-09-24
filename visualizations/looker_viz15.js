@@ -197,8 +197,11 @@ looker.plugins.visualizations.add({
         var pdfBetaA = jStat.beta.pdf(i, alphaPosteriorA, betaPosteriorA);
         var pdfBetaB = jStat.beta.pdf(i, alphaPosteriorB, betaPosteriorB);
         
-        if (pdfBetaB > maxY || pdfBetaA > maxY) {
-          maxY = pdfBetaB;  
+        if (pdfBetaA > maxY) {
+          maxY = pdfBetaA;  
+        }
+        if (pdfBetaB > maxY) {
+          maxY = pdfBetaB;      
         }
 
         var percentageX = i * 100;
