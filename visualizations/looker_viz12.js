@@ -125,11 +125,9 @@ looker.plugins.visualizations.add({
       default: 1
     },
     credibleIntervalPercent: {
-      type: "range",
+      type: "number",
       label: "Credible Interval %",
-      default: 95,
-      max: 95,
-      min: 10
+      default: 95
     }
   },
   
@@ -173,7 +171,7 @@ looker.plugins.visualizations.add({
     var graphHeight = 250;
     var axisPadding = 40;
     var legendX = graphWidth / 10,
-        legendY = graphHeight + 50 + axisPadding;
+        legendY = graphHeight + 10 + axisPadding;
     var probabilityTextHeight = legendY + 70;
     var width = graphWidth + axisPadding + 1000,
         height = probabilityTextHeight + 20;
@@ -295,18 +293,17 @@ looker.plugins.visualizations.add({
         );
 
     // Handmade legend 
-    svg.append("text").attr("x", legendX).attr("y", legendY - 30).text(credibleIntervalPercent + "% Credible Intervals for Variant's Conversion %:").style("font-size", "14px").style("font-weight", "bold").attr("alignment-baseline","middle")
     svg.append("circle").attr("cx", legendX + 5).attr("cy",legendY).attr("r", 6).style("fill", "#69b3a2")
     svg.append("circle").attr("cx",legendX + 5).attr("cy",legendY+30).attr("r", 6).style("fill", "#404080")
     
     // Display credible interval calculations
     svg.append("text").attr("x", legendX + 20).attr("y", legendY)
-      .text(abTestData.variantALabel + ": (" + credibleIntervalA.lowerInterval + "%, " + credibleIntervalA.upperInterval + "%)")
+      .text(credibleIntervalPercent + "% probability '" + abTestData.variantALabel +"' conversion is in range [" + credibleIntervalA.lowerInterval + "%, " + credibleIntervalA.upperInterval + "%]")
       .style("font-size", "14px")
       .attr("alignment-baseline","middle");
     
     svg.append("text").attr("x", legendX + 20).attr("y", legendY + 30)
-      .text(abTestData.variantBLabel + ": (" + credibleIntervalB.lowerInterval + "%, " + credibleIntervalB.upperInterval + "%)")
+      .text(credibleIntervalPercent + "% probability '" + abTestData.variantBLabel +"' conversion is in range [" + credibleIntervalB.lowerInterval + "%, " + credibleIntervalB.upperInterval + "%]")
       .style("font-size", "14px")
       .attr("alignment-baseline","middle");
     
