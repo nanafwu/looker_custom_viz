@@ -224,10 +224,7 @@ looker.plugins.visualizations.add({
         .domain([0, maxXDraw])
         .range([0, graphWidth]);
     
-     var xAxis = d3.axisBottom().scale(xScale)
-      .tickFormat(function (tickValue) {
-       return tickValue;
-     });
+    var xAxis = d3.axisBottom().scale(xScale).ticks(20);
     
      // Add the text label for X Axis
     svg.append("text")
