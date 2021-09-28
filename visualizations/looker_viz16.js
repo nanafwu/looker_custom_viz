@@ -152,7 +152,9 @@ looker.plugins.visualizations.add({
     
     var alphaPrior = config.alphaPrior;
     var betaPrior = config.betaPrior;
+    var credibleIntervalPercent = config.credibleIntervalPercent;
     
+    data = data.slice(0, 2); // Only calculate A/B test results for first 2 rows of data
     var labels = getLabels(queryResponse);
     var abTestData = getABTestData(data, labels.variant, labels.visitors, labels.conversions)
     
@@ -162,7 +164,6 @@ looker.plugins.visualizations.add({
     var alphaPosteriorB = alphaPrior + abTestData.conversionsFromB;
     var betaPosteriorB = betaPrior + abTestData.visitorsToB - abTestData.conversionsFromB;
     
-    var credibleIntervalPercent = config.credibleIntervalPercent;
     var credibleIntervalA = calculateCredibleInterval(credibleIntervalPercent, alphaPosteriorA, betaPosteriorA);
     var credibleIntervalB = calculateCredibleInterval(credibleIntervalPercent, alphaPosteriorB, betaPosteriorB);
 
