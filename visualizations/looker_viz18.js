@@ -272,10 +272,9 @@ looker.plugins.visualizations.add({
       default: 1
     },
     credibleIntervalPercent: {
-      type: "range",
+      type: "number",
       label: "Credible Interval %",
-      max: 95,
-      min: 10
+      default: 95
     }
   },
   
