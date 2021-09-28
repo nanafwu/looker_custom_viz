@@ -166,7 +166,7 @@ looker.plugins.visualizations.add({
     var credibleIntervalA = calculateCredibleInterval(credibleIntervalPercent, alphaPosteriorA, betaPosteriorA);
     var credibleIntervalB = calculateCredibleInterval(credibleIntervalPercent, alphaPosteriorB, betaPosteriorB);
 
-    // set the dimensions and margins of the graph
+   // set the dimensions and margins of the graph
     var graphWidth = 500;
     var graphHeight = 250;
     var axisPadding = 40;
@@ -189,10 +189,10 @@ looker.plugins.visualizations.add({
     var betaA = []
     var betaB = []
     var maxY = 0;
-    var maxX = 0;
     
     // Draw beta distributions for conversion percentage
-    var minPDFValue = 0.1;
+    var allPDFValuesA = []; // Track to determine what 1% percentile PDF value is
+    var allPDFValuesB = []; // Track to determine what 1% percentile PDF value is
     for (i = 0; i <= 1; i += 0.01) {
         var pdfBetaA = jStat.beta.pdf(i, alphaPosteriorA, betaPosteriorA);
         var pdfBetaB = jStat.beta.pdf(i, alphaPosteriorB, betaPosteriorB);
@@ -205,29 +205,47 @@ looker.plugins.visualizations.add({
         }
 
         var percentageX = i * 100;
-        
-        if (pdfBetaA > minPDFValue && percentageX > maxX) {
-          // multiply by 100 to turn into percentage
-          maxX = percentageX;
-        }   
-        if (pdfBetaB > minPDFValue && percentageX > maxX) {
-          maxX = percentageX;
-        }    
         betaA.push([percentageX, pdfBetaA]);
         betaB.push([percentageX, pdfBetaB]);
+        
+        if (pdfBetaA > 0) {
+          allPDFValuesA.push(pdfBetaA);
+        }
+        if (pdfBetaB > 0) {
+          allPDFValuesB.push(pdfBetaB);
+        } 
     }
     
+    // don't bother drawing if PDF value is too small (5th percentile)
+    var minPDFDraw = _.min([_.max(allPDFValuesA), _.max(allPDFValuesB)]) * 0.0000001; 
+    // figure out what maxX should be (i.e. less than 5th percentile of PDF)
+    var maxX = -1;
+    for (var x = 0; x < betaA.length; x++) {
+      var pdfA = betaA[x][1];
+      var aX = betaA[x][0];
+      if (pdfA > minPDFDraw && aX > maxX){
+          maxX = aX;
+      }
+    }
+
+    for (var x = 0; x < betaB.length; x++) {
+      var pdfB = betaB[x][1];
+      var bX = betaB[x][0];
+      if (pdfB > minPDFDraw && bX > maxX ){
+          maxX = bX;
+      }
+    }
     // don't draw past any values of maxX * 1.25 to center visualization
     var maxXDraw = maxX * 1.25;
-    var betaADraw = _.filter(betaA, function(arr){ return arr[0] < maxXDraw; });
-    var betaBDraw = _.filter(betaB, function(arr){ return arr[0] < maxXDraw; });
-    
+    var betaADraw = _.filter(betaA, function(arr){ return arr[0] < maxXDraw });
+    var betaBDraw = _.filter(betaB, function(arr){ return arr[0] < maxXDraw });
+        
     // add the x Axis for conversion percentage
     var xScale = d3.scaleLinear()
         .domain([0, maxXDraw])
         .range([0, graphWidth]);
     
-    var xAxis = d3.axisBottom().scale(xScale).ticks(20);
+     var xAxis = d3.axisBottom().scale(xScale).ticks(20);
     
      // Add the text label for X Axis
     svg.append("text")
