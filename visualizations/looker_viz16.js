@@ -8,7 +8,7 @@
 function compareConversionProbability (
   variantALabel, variantBLabel,
   alphaPosteriorA, betaPosteriorA, alphaPosteriorB, betaPosteriorB) {
-  var samples = 10000;
+  var samples = 20000;
   var aGreaterThanB = 0;
   var bGreaterThanA = 0;
     
@@ -111,6 +111,81 @@ function calculateCredibleInterval(ciPercent, alpha, beta) {
   }
 }
 
+/*
+Draw probability density functions of posterior distributions
+*/
+function drawPDF(svg, maxXDraw, graphWidth, maxY, graphHeight, axisPadding,
+                 betaADraw, posteriorAColor, betaBDraw, posteriorBColor) {
+    // add the x Axis for conversion percentage
+    var xScale = d3.scaleLinear()
+        .domain([0, maxXDraw])
+        .range([0, graphWidth]);
+    
+     var xAxis = d3.axisBottom().scale(xScale).ticks(20);
+    
+     // Add the text label for X Axis
+    svg.append("text")
+      .attr("x", graphWidth + 100)
+      .attr("y", graphHeight + 5)
+      .style("text-anchor", "middle")
+      .style("font-size", "12px")
+      .text("Conversion %");
+    
+    svg.append("g")
+      .attr("transform", "translate(" + axisPadding + "," + graphHeight + ")")
+      .call(xAxis);
+
+    // add the y Axis
+    var yScale = d3.scaleLinear()
+          .range([graphHeight, 0])
+          .domain([0, maxY]);
+    
+    svg.append("g")
+        .attr("transform", "translate(" + axisPadding + ", 0)")
+        .call(d3.axisLeft(yScale));
+
+    // Add the text label for Y axis
+    svg.append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("x", -(graphHeight / 2))
+      .attr("y", axisPadding / 4)
+      .style("text-anchor", "middle")
+      .style("font-size", "12px")
+      .text("Probability Density")
+    
+    // Plot the area of posterior A
+    svg.append("path")
+        .datum(betaADraw)
+        .attr("fill", posteriorAColor)
+        .attr("opacity", ".6")
+        .attr("stroke", "#000")
+        .attr("stroke-width", 1)
+        .attr("stroke-linejoin", "round")
+        .attr("transform", "translate(" + axisPadding + ", 0)")
+        .attr("d",  d3.line()
+          .curve(d3.curveBasis)
+            .x(function(d) { 
+              return xScale(d[0]); })
+            .y(function(d) { return yScale(d[1]); })
+        );
+
+    // Plot the area of posterior B
+    svg.append("path")
+        .datum(betaBDraw)
+        .attr("fill", posteriorBColor)
+        .attr("opacity", ".6")
+        .attr("stroke", "#000")
+        .attr("stroke-width", 1)
+        .attr("stroke-linejoin", "round")
+        .attr("transform", "translate(" + axisPadding + ", 0)")
+        .attr("d",  d3.line()
+          .curve(d3.curveBasis)
+            .x(function(d) { return xScale(d[0]); })
+            .y(function(d) { return yScale(d[1]); })
+        );  
+  
+}
+
 looker.plugins.visualizations.add({
 
  options: {
@@ -125,9 +200,11 @@ looker.plugins.visualizations.add({
       default: 1
     },
     credibleIntervalPercent: {
-      type: "number",
+      type: "range",
       label: "Credible Interval %",
-      default: 95
+      default: 95,
+      max: 95,
+      min: 10
     }
   },
   
@@ -158,7 +235,7 @@ looker.plugins.visualizations.add({
     var labels = getLabels(queryResponse);
     var abTestData = getABTestData(data, labels.variant, labels.visitors, labels.conversions)
     
-    var alphaPosteriorA = alphaPrior + abTestData.conversionsFromA;
+    var alphaPosteriorA =  alphaPrior + abTestData.conversionsFromA;
     var betaPosteriorA = betaPrior + abTestData.visitorsToA - abTestData.conversionsFromA;
     
     var alphaPosteriorB = alphaPrior + abTestData.conversionsFromB;
@@ -167,7 +244,9 @@ looker.plugins.visualizations.add({
     var credibleIntervalA = calculateCredibleInterval(credibleIntervalPercent, alphaPosteriorA, betaPosteriorA);
     var credibleIntervalB = calculateCredibleInterval(credibleIntervalPercent, alphaPosteriorB, betaPosteriorB);
 
-   // set the dimensions and margins of the graph
+    // set the dimensions and margins of the graph
+    var posteriorAColor = "#69b3a2";
+    var posteriorBColor = "#404080";
     var graphWidth = 500;
     var graphHeight = 250;
     var axisPadding = 40;
@@ -175,7 +254,7 @@ looker.plugins.visualizations.add({
         legendY = graphHeight + 10 + axisPadding;
     var probabilityTextHeight = legendY + 70;
     var width = graphWidth + axisPadding + 1000,
-        height = probabilityTextHeight + 20;
+        height = probabilityTextHeight + 20 + graphHeight + axisPadding;
         
     // Clear any existing SVGs
     d3.select(element).selectAll("*").remove();
@@ -241,75 +320,9 @@ looker.plugins.visualizations.add({
     var betaADraw = _.filter(betaA, function(arr){ return arr[0] < maxXDraw });
     var betaBDraw = _.filter(betaB, function(arr){ return arr[0] < maxXDraw });
         
-    // add the x Axis for conversion percentage
-    var xScale = d3.scaleLinear()
-        .domain([0, maxXDraw])
-        .range([0, graphWidth]);
-    
-     var xAxis = d3.axisBottom().scale(xScale).ticks(20);
-    
-     // Add the text label for X Axis
-    svg.append("text")
-      .attr("x", graphWidth + 100)
-      .attr("y", graphHeight + 5)
-      .style("text-anchor", "middle")
-      .style("font-size", "12px")
-      .text("Conversion %");
-    
-    svg.append("g")
-      .attr("transform", "translate(" + axisPadding + "," + graphHeight + ")")
-      .call(xAxis);
-
-    // add the y Axis
-    var yScale = d3.scaleLinear()
-          .range([graphHeight, 0])
-          .domain([0, maxY]);
-    
-    svg.append("g")
-        .attr("transform", "translate(" + axisPadding + ", 0)")
-        .call(d3.axisLeft(yScale));
-
-    // Add the text label for Y axis
-    svg.append("text")
-      .attr("transform", "rotate(-90)")
-      .attr("x", -(graphHeight / 2))
-      .attr("y", axisPadding / 4)
-      .style("text-anchor", "middle")
-      .style("font-size", "12px")
-      .text("Probability Density")
-    
-    // Plot the area of posterior A
-    svg.append("path")
-        .attr("class", "mypath")
-        .datum(betaADraw)
-        .attr("fill", "#69b3a2")
-        .attr("opacity", ".6")
-        .attr("stroke", "#000")
-        .attr("stroke-width", 1)
-        .attr("stroke-linejoin", "round")
-        .attr("transform", "translate(" + axisPadding + ", 0)")
-        .attr("d",  d3.line()
-          .curve(d3.curveBasis)
-            .x(function(d) { 
-              return xScale(d[0]); })
-            .y(function(d) { return yScale(d[1]); })
-        );
-
-    // Plot the area of posterior B
-    svg.append("path")
-        .attr("class", "mypath")
-        .datum(betaBDraw)
-        .attr("fill", "#404080")
-        .attr("opacity", ".6")
-        .attr("stroke", "#000")
-        .attr("stroke-width", 1)
-        .attr("stroke-linejoin", "round")
-        .attr("transform", "translate(" + axisPadding + ", 0)")
-        .attr("d",  d3.line()
-          .curve(d3.curveBasis)
-            .x(function(d) { return xScale(d[0]); })
-            .y(function(d) { return yScale(d[1]); })
-        );
+    // draw PDF of both posterior distributions
+    drawPDF(svg, maxXDraw, graphWidth, maxY, graphHeight, axisPadding,
+            betaADraw, posteriorAColor, betaBDraw, posteriorBColor);
 
     // Handmade legend 
     svg.append("circle").attr("cx", legendX + 5).attr("cy",legendY).attr("r", 6).style("fill", "#69b3a2")
@@ -326,12 +339,13 @@ looker.plugins.visualizations.add({
       .style("font-size", "14px")
       .attr("alignment-baseline","middle");
     
-     // Calculate which variant has a higher conversion
+    // Calculate which variant has a higher conversion
     var variant_win_str = compareConversionProbability(
       abTestData.variantALabel,
       abTestData.variantBLabel,
       alphaPosteriorA, betaPosteriorA, alphaPosteriorB, betaPosteriorB);
     
+    // Render probability of variant A beating Variant B.
     svg.append("text")
       .attr("x", legendX-5)
       .attr("y", probabilityTextHeight)
@@ -339,7 +353,9 @@ looker.plugins.visualizations.add({
       .style("font-size", "14px")
       .style("font-weight", "bold");
 
-    // Render probability of variant A beating Variant B.
+    // render CDF
+    
+    
     doneRendering()
   }
 });
