@@ -228,7 +228,7 @@ function drawCDF(svg, maxXDraw, graphWidth, maxY, graphHeight, axisPadding, tran
       .attr("y", axisPadding / 4)
       .style("text-anchor", "middle")
       .style("font-size", "12px")
-      .text("Cumulative Probability");
+      .text("Cumulative Probability (%)");
     
     // Plot the CDF of posterior A
     svg.append("path")
@@ -264,7 +264,8 @@ looker.plugins.visualizations.add({
     alphaPrior: {
       type: "number",
       label: "Prior Alpha",
-      default: 1
+      default: 1,
+      description: 'Test Description'
     },
     betaPrior: {
       type: "number",
@@ -430,15 +431,16 @@ looker.plugins.visualizations.add({
     var betaACDFDraw = [];
     var betaBCDFDraw = [];
     for (i = 0; i <= (maxX / 100); i += 0.01) {
-      var cdfBetaA = jStat.beta.cdf(i, alphaPosteriorA, betaPosteriorA);
-      var cdfBetaB = jStat.beta.cdf(i, alphaPosteriorB, betaPosteriorB);  
+      // convert probability to percentages
+      var cdfBetaA = jStat.beta.cdf(i, alphaPosteriorA, betaPosteriorA) * 100;
+      var cdfBetaB = jStat.beta.cdf(i, alphaPosteriorB, betaPosteriorB) * 100;  
       var percentageX = i * 100;
       betaACDFDraw.push([percentageX, cdfBetaA]);
       betaBCDFDraw.push([percentageX, cdfBetaB]);
     }
     
     // render CDF of posterior distributions
-    drawCDF(svg, maxXDraw, graphWidth, 1, graphHeight, axisPadding, (probabilityTextHeight + 20),
+    drawCDF(svg, maxXDraw, graphWidth, 100, graphHeight, axisPadding, (probabilityTextHeight + 20),
             betaACDFDraw, posteriorAColor, betaBCDFDraw, posteriorBColor);
     
     doneRendering()
