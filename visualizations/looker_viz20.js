@@ -263,12 +263,12 @@ looker.plugins.visualizations.add({
  options: {
     alphaPrior: {
       type: "number",
-      label: "Prior Beta Distribution's 'Alpha' Shape Parameter Value",
+      label: "Prior Beta Distribution's 'Alpha' Param Value",
       default: 1,
     },
     betaPrior: {
       type: "number",
-      label: "Prior Beta Distribution's 'Beta' Shape Parameter Value",
+      label: "Prior Beta Distribution's 'Beta' Param Value",
       default: 1
     },
     credibleIntervalPercent: {
