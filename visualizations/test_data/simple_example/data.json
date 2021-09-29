@@ -1,0 +1,34 @@
+[
+    {
+        "Bayesian_AB_Testing.id_goose_campaign": {
+            "value": 2651,
+            "rendered": "2,651"
+        },
+        "Bayesian_AB_Testing.name_goose_campaign": {
+            "value": "2021-09-21_Clinical Trials Lung Cancer_v1.1 v2",
+            "filterable_value": "\"2021-09-21_Clinical Trials Lung Cancer_v1.1 v2\""
+        },
+        "Bayesian_AB_Testing.delivered": {
+            "value": 385
+        },
+        "Bayesian_AB_Testing.clicks": {
+            "value": 14
+        }
+    },
+    {
+        "Bayesian_AB_Testing.id_goose_campaign": {
+            "value": 2652,
+            "rendered": "2,652"
+        },
+        "Bayesian_AB_Testing.name_goose_campaign": {
+            "value": "2021-09-21_Clinical_Trials_Lung_Cancer_v1.2",
+            "filterable_value": "\"2021-09-21_Clinical_Trials_Lung_Cancer_v1.2\""
+        },
+        "Bayesian_AB_Testing.delivered": {
+            "value": 388
+        },
+        "Bayesian_AB_Testing.clicks": {
+            "value": 17
+        }
+    }
+]
