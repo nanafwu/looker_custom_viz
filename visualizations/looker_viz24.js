@@ -220,14 +220,16 @@ looker.plugins.visualizations.add({
       section: 'Style',
       type: 'string',
       display: 'color',
-      default: "#69b3a2"
+      default: "#69b3a2",
+      placeholder: "#69b3a2"
     },
     campaign2Color: {
       label: 'Campaign 2 Color',
       section: 'Style',
       type: 'string',
       display: 'color',
-      default: "#404080"
+      default: "#404080",
+      placeholder: "#404080"
     }
   },
   
