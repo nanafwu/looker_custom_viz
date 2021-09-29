@@ -71,7 +71,7 @@ looker.plugins.visualizations.add({
     this.clearErrors();
 
     // Throw some errors and exit if the shape of the data isn't what this chart needs
-    if (queryResponse.fields.dimensions.length == 0) {
+    if (queryResponse.fields.dimensions.length == 2) {
       this.addError({title: "No Dimensions", message: "This chart requires dimensions."});
       return;
     }
