@@ -303,7 +303,7 @@ looker.plugins.visualizations.add({
     if (errorMessage) {
       svg.append("text")
       .text(errorMessage)
-      .attr("x", width / 5)
+      .attr("x", 50)
       .attr("y", 50)
       .style("font-size", "14px")
       .style("font-weight", "bold");
