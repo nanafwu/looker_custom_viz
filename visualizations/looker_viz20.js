@@ -1,10 +1,14 @@
 /**
- * Welcome to the Looker Visualization Builder! Please refer to the following resources 
- * to help you write your visualization:
- *  - API Documentation - https://github.com/looker/custom_visualizations_v2/blob/master/docs/api_reference.md
- *  - Example Visualizations - https://github.com/looker/custom_visualizations_v2/tree/master/src/examples
+ * Dependencies:
+ * https://cdn.jsdelivr.net/npm/jstat@latest/dist/jstat.min.js
+ * https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore-min.js
+ * https://cdnjs.cloudflare.com/ajax/libs/d3/4.13.0/d3.js
  **/
 
+
+/*
+ Display some helpful text to help 
+*/
 function compareConversionProbability (
   variantALabel, variantBLabel,
   alphaPosteriorA, betaPosteriorA, alphaPosteriorB, betaPosteriorB) {
@@ -187,77 +191,6 @@ function drawPDF(svg, maxXDraw, graphWidth, maxY, graphHeight, axisPadding,
 }
 
 
-
-/*
-Draw cumulative density functions of posterior distributions
-*/
-function drawCDF(svg, maxXDraw, graphWidth, maxY, graphHeight, axisPadding, translateY,
-                 betaADraw, posteriorAColor, betaBDraw, posteriorBColor) {
-    // add the x Axis for conversion percentage
-    var xScale = d3.scaleLinear()
-        .domain([0, maxXDraw])
-        .range([0, graphWidth]);
-    
-    var xAxis = d3.axisBottom().scale(xScale).ticks(20);
-    
-    // Add the text label for X Axis
-    svg.append("text")
-      .attr("x", graphWidth + 100)
-      .attr("y", graphHeight + 5 + translateY)
-      .style("text-anchor", "middle")
-      .style("font-size", "12px")
-      .text("Conversion %");
-    
-    svg.append("g")
-      .attr("transform", "translate(" + axisPadding + "," + (graphHeight + translateY) + ")")
-      .call(xAxis);
-
-    // add the y Axis
-    var yScale = d3.scaleLinear()
-        .range([graphHeight, 0])
-        .domain([0, maxY]);
-    
-    svg.append("g")
-        .attr("transform", "translate(" + axisPadding + ", " + translateY + ")")
-        .call(d3.axisLeft(yScale));
-
-    // Add the text label for Y axis
-    svg.append("text")
-      .attr("transform", "rotate(-90)")
-      .attr("x", -(((graphHeight / 2) + 5 + translateY)))
-      .attr("y", axisPadding / 4)
-      .style("text-anchor", "middle")
-      .style("font-size", "12px")
-      .text("Cumulative Probability (%)");
-    
-    // Plot the CDF of posterior A
-    svg.append("path")
-        .datum(betaADraw)
-        .attr("fill", 'none')
-        .attr("stroke", posteriorAColor)
-        .attr("stroke-width", 2)
-        .attr("stroke-linejoin", "round")
-        .attr("transform", "translate(" + axisPadding + ", " + translateY + ")")
-        .attr("d",  d3.line()
-          .curve(d3.curveBasis)
-            .x(function(d) { 
-              return xScale(d[0]); })
-            .y(function(d) { return yScale(d[1]); }));
-
-    // Plot the CDF of posterior B
-    svg.append("path")
-        .datum(betaBDraw)
-        .attr("fill", 'none')
-        .attr("stroke", posteriorBColor)
-        .attr("stroke-width", 2)
-        .attr("stroke-linejoin", "round")
-        .attr("transform", "translate(" + axisPadding + "," + translateY + ")")
-        .attr("d",  d3.line()
-          .curve(d3.curveBasis)
-            .x(function(d) { return xScale(d[0]); })
-            .y(function(d) { return yScale(d[1]); }));  
-}
-
 looker.plugins.visualizations.add({
 
  options: {
@@ -422,23 +355,6 @@ looker.plugins.visualizations.add({
       .text(variant_win_str)
       .style("font-size", "14px")
       .style("font-weight", "bold");
-
-   
-    // Calculate CDF points of posterior distributions
-    var betaACDFDraw = [];
-    var betaBCDFDraw = [];
-    for (i = 0; i <= (maxX / 100); i += 0.01) {
-      // convert probability to percentages
-      var cdfBetaA = jStat.beta.cdf(i, alphaPosteriorA, betaPosteriorA) * 100;
-      var cdfBetaB = jStat.beta.cdf(i, alphaPosteriorB, betaPosteriorB) * 100;  
-      var percentageX = i * 100;
-      betaACDFDraw.push([percentageX, cdfBetaA]);
-      betaBCDFDraw.push([percentageX, cdfBetaB]);
-    }
-    
-    // render CDF of posterior distributions
-    drawCDF(svg, maxXDraw, graphWidth, 100, graphHeight, axisPadding, (probabilityTextHeight + 20),
-            betaACDFDraw, posteriorAColor, betaBCDFDraw, posteriorBColor);
     
     doneRendering()
   }
