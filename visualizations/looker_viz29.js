@@ -269,36 +269,8 @@ looker.plugins.visualizations.add({
     var credibleIntervalPercent = config.credibleIntervalPercent || defaults.credibleIntervalPercent;
     var posteriorAColor = config.campaign1Color || defaults.campaign1Color;
     var posteriorBColor = config.campaign2Color || defaults.campaign2Color;
-    
-    // Clear any errors from previous updates
-    this.clearErrors();
 
-    // Check for new errors
-    if (credibleIntervalPercent > 100) {
-      this.addError({
-        group: "mes-req",
-        title: "Invalid Credible Interval", 
-        message: "Credible interval must be between 0% and 100%."
-      });
-      return false;
-    } else {
-      this.clearErrors("mes-req");
-    }
-
-    data = data.slice(0, 2); // Only calculate A/B test results for first 2 rows of data
-    var labels = getLabels(queryResponse);
-    var abTestData = getABTestData(data, labels.variant, labels.visitors, labels.conversions)
-    
-    var alphaPosteriorA =  alphaPrior + abTestData.conversionsFromA;
-    var betaPosteriorA = betaPrior + abTestData.visitorsToA - abTestData.conversionsFromA;
-    
-    var alphaPosteriorB = alphaPrior + abTestData.conversionsFromB;
-    var betaPosteriorB = betaPrior + abTestData.visitorsToB - abTestData.conversionsFromB;
-    
-    var credibleIntervalA = calculateCredibleInterval(credibleIntervalPercent, alphaPosteriorA, betaPosteriorA);
-    var credibleIntervalB = calculateCredibleInterval(credibleIntervalPercent, alphaPosteriorB, betaPosteriorB);
-
-    // set the dimensions and margins of the graph
+     // set the dimensions and margins of the graph
     var graphWidth = 500;
     var graphHeight = 250;
     var axisPadding = 40;
@@ -316,6 +288,35 @@ looker.plugins.visualizations.add({
       .append("svg")
         .attr("width", width)
         .attr("height", height);
+   
+    // Display Errors
+    var errorMessage;
+    if (credibleIntervalPercent > 100) {
+      errorMessage = "Credible interval should be between 0% and 100%";
+    } 
+    if (errorMessage) {
+      console.log('displaying error message');
+      svg.append("text")
+      .text(errorMessage)
+      .attr("x", width / 5)
+      .attr("y", height / 2)
+      .style("font-size", "14px")
+      .style("font-weight", "bold");
+      return;
+    }
+
+    data = data.slice(0, 2); // Only calculate A/B test results for first 2 rows of data
+    var labels = getLabels(queryResponse);
+    var abTestData = getABTestData(data, labels.variant, labels.visitors, labels.conversions)
+    
+    var alphaPosteriorA =  alphaPrior + abTestData.conversionsFromA;
+    var betaPosteriorA = betaPrior + abTestData.visitorsToA - abTestData.conversionsFromA;
+    
+    var alphaPosteriorB = alphaPrior + abTestData.conversionsFromB;
+    var betaPosteriorB = betaPrior + abTestData.visitorsToB - abTestData.conversionsFromB;
+    
+    var credibleIntervalA = calculateCredibleInterval(credibleIntervalPercent, alphaPosteriorA, betaPosteriorA);
+    var credibleIntervalB = calculateCredibleInterval(credibleIntervalPercent, alphaPosteriorB, betaPosteriorB);
     
     // Calculate PDF points of posterior distribution
     var betaA = [];
