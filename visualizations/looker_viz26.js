@@ -108,7 +108,6 @@ for a given beta distribution.
 function calculateCredibleInterval(ciPercent, alpha, beta) {
 
   var ciProbability = ((100 - ciPercent) / 2) / 100;
-  console.log(ciProbability + " CI: ", alpha, "/", beta);
   return {
     lowerInterval: (jStat.beta.inv(ciProbability, alpha, beta) * 100).toFixed(2),
     upperInterval: (jStat.beta.inv(1 - ciProbability, alpha, beta) * 100).toFixed(2)
@@ -263,7 +262,7 @@ looker.plugins.visualizations.add({
     console.log('data: ', data),
     console.log('config: ', config)
     console.log('queryResponse', queryResponse)
-    
+
     // Get options specified by the user
     var alphaPrior = config.alphaPrior || defaults.alphaPrior;
     var betaPrior = config.betaPrior || defaults.betaPrior;
@@ -272,6 +271,15 @@ looker.plugins.visualizations.add({
     var posteriorBColor = config.campaign2Color || defaults.campaign2Color;
     
     console.log('--------', alphaPrior, ' ----- color: ', posteriorAColor); 
+
+    // Clear any errors from previous updates
+    this.clearErrors();
+
+    // Check for new errors
+    if (credibleIntervalPercent > 100) {
+      this.addError({title: "Invalid Credible Interval", message: "Credible interval must be between 0 %and 100%."});
+      return;
+    }
 
     data = data.slice(0, 2); // Only calculate A/B test results for first 2 rows of data
     var labels = getLabels(queryResponse);
