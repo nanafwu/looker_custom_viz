@@ -296,7 +296,7 @@ looker.plugins.visualizations.add({
     var errorMessage;
     if (credibleIntervalPercent > 100) {
       errorMessage = "Credible interval should be between 0% and 100%";
-    } else if (!labels.variant || !labels.conversions || !label.visitors) {
+    } else if (!labels.variant || !labels.conversions || !labels.visitors) {
       errorMessage = "Select the 'Variant' dimension (i.e. Campaign Name) first, then the dimension for 'Visitors' (e.g. Delivered), and last a dimension for 'Conversions' (e.g. Clicked)";
     }
 
