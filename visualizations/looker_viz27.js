@@ -270,14 +270,12 @@ looker.plugins.visualizations.add({
     var posteriorAColor = config.campaign1Color || defaults.campaign1Color;
     var posteriorBColor = config.campaign2Color || defaults.campaign2Color;
     
-    console.log('--------', alphaPrior, ' ----- color: ', posteriorAColor); 
-
     // Clear any errors from previous updates
-    this.clearErrors();
+    // this.clearErrors();
 
     // Check for new errors
     if (credibleIntervalPercent > 100) {
-      this.addError({title: "Invalid Credible Interval", message: "Credible interval must be between 0 %and 100%."});
+      this.addError({title: "Invalid Credible Interval", message: "Credible interval must be between 0% and 100%."});
       return;
     }
 
