@@ -199,18 +199,21 @@ looker.plugins.visualizations.add({
       type: "number",
       label: "Prior Beta Distribution's 'Alpha' Param Value",
       default: 1,
+      placeholder: 1
     },
     betaPrior: {
       section: 'Calculations',
       type: "number",
       label: "Prior Beta Distribution's 'Beta' Param Value",
-      default: 1
+      default: 1,
+      placeholder: 1
     },
     credibleIntervalPercent: {
       section: 'Calculations',
       type: "number",
       label: "Credible Interval %",
-      default: 95
+      default: 95,
+      placeholder: 95
     },
     campaign1Color: {
       label: 'Campaign 1 Color',
