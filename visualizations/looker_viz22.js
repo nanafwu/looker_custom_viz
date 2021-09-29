@@ -247,9 +247,12 @@ looker.plugins.visualizations.add({
     console.log('config: ', config)
     console.log('queryResponse', queryResponse)
     
+    // Get options specified by the user
     var alphaPrior = config.alphaPrior;
     var betaPrior = config.betaPrior;
     var credibleIntervalPercent = config.credibleIntervalPercent;
+    var posteriorAColor = config.campaign1Color;
+    var posteriorBColor = config.campaign2Color;
     
     data = data.slice(0, 2); // Only calculate A/B test results for first 2 rows of data
     var labels = getLabels(queryResponse);
@@ -265,8 +268,6 @@ looker.plugins.visualizations.add({
     var credibleIntervalB = calculateCredibleInterval(credibleIntervalPercent, alphaPosteriorB, betaPosteriorB);
 
     // set the dimensions and margins of the graph
-    var posteriorAColor = "#69b3a2";
-    var posteriorBColor = "#404080";
     var graphWidth = 500;
     var graphHeight = 250;
     var axisPadding = 40;
@@ -274,7 +275,7 @@ looker.plugins.visualizations.add({
         legendY = graphHeight + 10 + axisPadding;
     var probabilityTextHeight = legendY + 70;
     var width = graphWidth + axisPadding + 1000,
-        height = probabilityTextHeight + 20 + graphHeight + axisPadding;
+        height = probabilityTextHeight + 20;
         
     // Clear any existing SVGs
     d3.select(element).selectAll("*").remove();
