@@ -190,6 +190,17 @@ function drawPDF(svg, maxXDraw, graphWidth, maxY, graphHeight, axisPadding,
   
 }
 
+/*
+Default settings for Looker visualization
+*/
+var defaults = {
+  alphaPrior: 1,
+  betaPrior: 1,
+  credibleIntervalPercent: 95,
+  campaign1Color: "#69b3a2",
+  campaign2Color: "#404080"
+};
+
 
 looker.plugins.visualizations.add({
 
@@ -198,38 +209,38 @@ looker.plugins.visualizations.add({
       section: 'Calculations',
       type: "number",
       label: "Prior Beta Distribution's 'Alpha' Param Value",
-      default: 1,
-      placeholder: 1
+      default: defaults.alphaPrior,
+      placeholder: defaults.alphaPrior
     },
     betaPrior: {
       section: 'Calculations',
       type: "number",
       label: "Prior Beta Distribution's 'Beta' Param Value",
-      default: 1,
-      placeholder: 1
+      default: defaults.betaPrior,
+      placeholder: defaults.betaPrior,
     },
     credibleIntervalPercent: {
       section: 'Calculations',
       type: "number",
       label: "Credible Interval %",
-      default: 95,
-      placeholder: 95
+      default: defaults.credibleIntervalPercent,
+      placeholder: defaults.credibleIntervalPercent,
     },
     campaign1Color: {
       label: 'Campaign 1 Color',
       section: 'Style',
       type: 'string',
       display: 'color',
-      default: "#69b3a2",
-      placeholder: "#69b3a2"
+      default: defaults.campaign1Color,
+      placeholder: defaults.campaign1Color
     },
     campaign2Color: {
       label: 'Campaign 2 Color',
       section: 'Style',
       type: 'string',
       display: 'color',
-      default: "#404080",
-      placeholder: "#404080"
+      default: defaults.campaign2Color,
+      placeholder: defaults.campaign2Color
     }
   },
   
@@ -242,6 +253,7 @@ looker.plugins.visualizations.add({
     element.style.fontFamily = `"Open Sans", "Helvetica", sans-serif`;
   },
 
+
  /**
   * UpdateAsync is the function that gets called (potentially) multiple times. It receives
   * the data and should update the visualization with the new data.
@@ -253,12 +265,14 @@ looker.plugins.visualizations.add({
     console.log('queryResponse', queryResponse)
     
     // Get options specified by the user
-    var alphaPrior = config.alphaPrior;
-    var betaPrior = config.betaPrior;
-    var credibleIntervalPercent = config.credibleIntervalPercent;
-    var posteriorAColor = config.campaign1Color;
-    var posteriorBColor = config.campaign2Color;
+    var alphaPrior = config.alphaPrior || defaults.alphaPrior;
+    var betaPrior = config.betaPrior || defaults.betaPrior;
+    var credibleIntervalPercent = config.credibleIntervalPercent || defaults.credibleIntervalPercent;
+    var posteriorAColor = config.campaign1Color || defaults.campaign1Color;
+    var posteriorBColor = config.campaign2Color || defaults.campaign2Color;
     
+    console.log('--------', alphaPrior, ' ----- color: ', posteriorAColor); 
+
     data = data.slice(0, 2); // Only calculate A/B test results for first 2 rows of data
     var labels = getLabels(queryResponse);
     var abTestData = getABTestData(data, labels.variant, labels.visitors, labels.conversions)
