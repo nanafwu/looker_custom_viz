@@ -289,24 +289,27 @@ looker.plugins.visualizations.add({
         .attr("width", width)
         .attr("height", height);
    
+    data = data.slice(0, 2); // Only calculate A/B test results for first 2 rows of data
+    var labels = getLabels(queryResponse);
+
     // Display Errors
     var errorMessage;
     if (credibleIntervalPercent > 100) {
       errorMessage = "Credible interval should be between 0% and 100%";
-    } 
+    } else if (!labels.variant || !labels.conversions || !label.visitors) {
+      errorMessage = "Select the 'Variant' dimension (i.e. Campaign Name) first, then the dimension for 'Visitors' (e.g. Delivered), and last a dimension for 'Conversions' (e.g. Clicked)";
+    }
+
     if (errorMessage) {
-      console.log('displaying error message');
       svg.append("text")
       .text(errorMessage)
       .attr("x", width / 5)
-      .attr("y", height / 2)
+      .attr("y", 50)
       .style("font-size", "14px")
       .style("font-weight", "bold");
       return;
     }
 
-    data = data.slice(0, 2); // Only calculate A/B test results for first 2 rows of data
-    var labels = getLabels(queryResponse);
     var abTestData = getABTestData(data, labels.variant, labels.visitors, labels.conversions)
     
     var alphaPosteriorA =  alphaPrior + abTestData.conversionsFromA;
