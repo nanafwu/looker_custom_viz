@@ -271,12 +271,18 @@ looker.plugins.visualizations.add({
     var posteriorBColor = config.campaign2Color || defaults.campaign2Color;
     
     // Clear any errors from previous updates
-    // this.clearErrors();
+    this.clearErrors();
 
     // Check for new errors
     if (credibleIntervalPercent > 100) {
-      this.addError({title: "Invalid Credible Interval", message: "Credible interval must be between 0% and 100%."});
-      return;
+      this.addError({
+        group: "mes-req",
+        title: "Invalid Credible Interval", 
+        message: "Credible interval must be between 0% and 100%."
+      });
+      return false;
+    } else {
+      this.clearErrors("mes-req");
     }
 
     data = data.slice(0, 2); // Only calculate A/B test results for first 2 rows of data
