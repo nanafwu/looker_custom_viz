@@ -45,33 +45,41 @@ Set the 3rd numeric dimension as the "conversions".
 */
 function getLabels(queryResponse) {
   
-    var lblVariant, lblVisitors, lblCnversions;
+    var lblVariant, lblVisitors, lblCnversions,
+        // these are used to label the x-axis
+        lblVisitorsShort, lblConversionsShort;
     
     // First check dimensions
     for(var dim of queryResponse.fields.dimensions) {
       if (!lblVariant && dim.type === "string") {
-        lblVariant = dim.name
+        lblVariant = dim.name;
       } else if (!lblVisitors && dim.type == "number") {
-        lblVisitors = dim.name
+        lblVisitors = dim.name;
+        lblVisitorsShort = dim.label_short;
       } else if (!lblCnversions && dim.type == "number") {
-        lblCnversions = dim.name
+        lblCnversions = dim.name;
+        lblConversionsShort = dim.label_short;
       }
     }
     // Next check measures
     for(var msr of queryResponse.fields.measures) {
       if (!lblVariant && msr.type === "string") {
-        lblVariant = msr.name
+        lblVariant = msr.name;
       } else if (!lblVisitors && msr.type == "number") {
-        lblVisitors = msr.name
+        lblVisitors = msr.name;
+        lblVisitorsShort = msr.label_short;
       } else if (!lblCnversions && msr.type == "number") {
-        lblCnversions = msr.name
+        lblCnversions = msr.name;
+        lblConversionsShort = msr.label_short;
       }
     }
     
     return {
       variant: lblVariant,
       visitors: lblVisitors,
-      conversions: lblCnversions
+      conversions: lblCnversions,
+      visitorsShort: lblVisitorsShort,
+      conversionsShort: lblConversionsShort
     }
 }
 
@@ -117,7 +125,7 @@ function calculateCredibleInterval(ciPercent, alpha, beta) {
 /*
 Draw probability density functions of posterior distributions
 */
-function drawPDF(svg, maxXDraw, graphWidth, maxY, graphHeight, axisPadding,
+function drawPDF(svg, xAxisLabel, maxXDraw, graphWidth, maxY, graphHeight, axisPadding,
                  betaADraw, posteriorAColor, betaBDraw, posteriorBColor) {
     // add the x Axis for conversion percentage
     var xScale = d3.scaleLinear()
@@ -132,7 +140,7 @@ function drawPDF(svg, maxXDraw, graphWidth, maxY, graphHeight, axisPadding,
       .attr("y", graphHeight + 5)
       .style("text-anchor", "middle")
       .style("font-size", "12px")
-      .text("Conversion %");
+      .text(xAxisLabel);
     
     svg.append("g")
       .attr("transform", "translate(" + axisPadding + "," + graphHeight + ")")
@@ -364,7 +372,7 @@ looker.plugins.visualizations.add({
     var betaBDraw = _.filter(betaB, function(arr){ return arr[0] < maxXDraw });
         
     // draw PDF of both posterior distributions
-    drawPDF(svg, maxXDraw, graphWidth, maxY, graphHeight, axisPadding,
+    drawPDF(svg, labels.conversionsShort + ' / ' + labels.visitorsShort + ' (%)', maxXDraw, graphWidth, maxY, graphHeight, axisPadding,
             betaADraw, posteriorAColor, betaBDraw, posteriorBColor);
 
     // Handmade legend 
