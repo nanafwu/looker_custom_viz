@@ -193,8 +193,6 @@ function drawPDF(svg, maxXDraw, graphWidth, maxY, graphHeight, axisPadding,
 Default settings for Looker visualization
 */
 var defaults = {
-  alphaPrior: 1,
-  betaPrior: 1,
   credibleIntervalPercent: 95,
   campaign1Color: "#69b3a2",
   campaign2Color: "#404080"
@@ -204,20 +202,6 @@ var defaults = {
 looker.plugins.visualizations.add({
 
  options: {
-    alphaPrior: {
-      section: 'Calculations',
-      type: "number",
-      label: "Prior Beta Distribution's 'Alpha' Param Value",
-      default: defaults.alphaPrior,
-      placeholder: defaults.alphaPrior
-    },
-    betaPrior: {
-      section: 'Calculations',
-      type: "number",
-      label: "Prior Beta Distribution's 'Beta' Param Value",
-      default: defaults.betaPrior,
-      placeholder: defaults.betaPrior,
-    },
     credibleIntervalPercent: {
       section: 'Calculations',
       type: "number",
@@ -263,9 +247,12 @@ looker.plugins.visualizations.add({
     console.log('config: ', config)
     console.log('queryResponse', queryResponse)
 
+    // In the future, we may want to allow the user to specify the prior
+    // For now, leave it as the uniform distribution
+    var alphaPrior = 1;
+    var betaPrior = 1;
+    
     // Get options specified by the user
-    var alphaPrior = config.alphaPrior || defaults.alphaPrior;
-    var betaPrior = config.betaPrior || defaults.betaPrior;
     var credibleIntervalPercent = config.credibleIntervalPercent || defaults.credibleIntervalPercent;
     var posteriorAColor = config.campaign1Color || defaults.campaign1Color;
     var posteriorBColor = config.campaign2Color || defaults.campaign2Color;
