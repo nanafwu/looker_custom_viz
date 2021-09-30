@@ -136,7 +136,7 @@ function drawPDF(svg, xAxisLabel, maxXDraw, graphWidth, maxY, graphHeight, axisP
     
      // Add the text label for X Axis
     svg.append("text")
-      .attr("x", graphWidth + 100)
+      .attr("x", graphWidth + 110)
       .attr("y", graphHeight + 5)
       .style("text-anchor", "middle")
       .style("font-size", "12px")
@@ -305,7 +305,7 @@ looker.plugins.visualizations.add({
       return;
     }
 
-    var abTestData = getABTestData(data, labels.variant, labels.visitors, labels.conversions)
+    var abTestData = getABTestData(data, labels.variant, labels.visitors, labels.conversions);
     
     var alphaPosteriorA =  alphaPrior + abTestData.conversionsFromA;
     var betaPosteriorA = betaPrior + abTestData.visitorsToA - abTestData.conversionsFromA;
